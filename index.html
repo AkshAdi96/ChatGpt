@@ -19,20 +19,34 @@
     .hidden { display: none !important; }
 
     /* --- 1. NEW HOME SCREEN (The 2 Buttons) --- */
-    #home-screen { justify-content: center; align-items: center; gap: 40px; }
+    #home-screen { justify-content: center; align-items: center; gap: 25px; }
     
     .big-btn { 
-      padding: 25px 30px; border-radius: 20px; font-size: 20px; font-weight: bold; 
-      border: none; color: white; cursor: pointer; width: 85%; max-width: 320px;
-      display: flex; align-items: center; justify-content: center; gap: 15px;
-      transition: transform 0.1s; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      padding: 25px 30px; 
+      border-radius: 20px; 
+      font-size: 20px; 
+      font-weight: bold; 
+      cursor: pointer; 
+      width: 85%; 
+      max-width: 320px;
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: 15px;
+      transition: transform 0.1s;
+      
+      /* --- TRANSPARENT STYLE CHANGES --- */
+      background: transparent;         /* No color */
+      border: 2px solid white;         /* White border */
+      color: white;                    /* White text */
+      box-shadow: none;
     }
-    .big-btn:active { transform: scale(0.96); }
     
-    /* Login Button Gradient */
-    .btn-login { background: linear-gradient(135deg, #3797f0, #005cbf); }
-    /* Instant Msg Button Gradient */
-    .btn-instant { background: linear-gradient(135deg, #b100cd, #6a0080); }
+    .big-btn:active { 
+      transform: scale(0.96); 
+      background: rgba(255,255,255,0.2); /* Slight white glow when clicked */
+    }
+    
 
     /* --- 2. AUTH SCREEN (Shared for both) --- */
     #auth-screen { justify-content: center; align-items: center; gap: 20px; }
@@ -116,7 +130,7 @@
 <body>
 
   <div id="home-screen" class="screen">
-    <h1 style="font-size: 32px; margin-bottom: 20px;">❤️ Our Space</h1>
+    <h1 style="font-size: 32px; margin-bottom: 20px;">Chat Room</h1>
     
     <button class="big-btn btn-login" onclick="setupAuth('login')">
       <i class="fas fa-comments"></i> Enter Chat
@@ -503,3 +517,4 @@
   </script>
 </body>
 </html>
+
