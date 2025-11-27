@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Our Secret Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: sans-serif; margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; background: #f0f2f5; }
+    
+    /* Login Screen */
+    #login-screen { display: flex; justify-content: center; align-items: center; height: 100%; background: #fff; position: fixed; width: 100%; z-index: 99; }
+    input { padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+    button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    
+    /* Chat Screen (Hidden by default) */
+    #chat-screen { display: none; flex-direction: column; height: 100%; }
+    #messages { list-style-type: none; margin: 0; padding: 20px; flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+    #messages li { padding: 10px 15px; border-radius: 20px; max-width: 70%; word-wrap: break-word; }
+    
+    /* Styling for "My" messages vs "Her" messages */
+    .my-message { background: #007bff; color: white; align-self: flex-end; }
+    .other-message { background: #e4e6eb; color: black; align-self: flex-start; }
+
+    #form { background: rgba(0, 0, 0, 0.15); padding: 0.5rem; display: flex; height: 3rem; box-sizing: content-box; backdrop-filter: blur(10px); }
+    #input { border: none; padding: 0 1rem; flex-grow: 1; border-radius: 2rem; margin: 0.25rem; }
+    #input:focus { outline: none; }
+  </style>
+</head>
+<body>
+
+  <div id="login-screen">
+    <div style="text-align: center;">
+      <h2>Enter Secret Code</h2>
+      <input id="code-input" type="password" placeholder="Passcode..." />
+      <button onclick="attemptLogin()">Enter</button>
+      <p id="error-msg" style="color: red; display: none;">Wrong code!</p>
+    </div>
+  </div>
+
+  <div id="chat-screen">
+    <ul id="messages"></ul>
+    <form id="form" action="">
+      <input id="input" autocomplete="off" /><button>Send</button>
+    </form>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    var socket = io();
+    var myId = socket.id; // To track which message is mine
+
+    // Login Logic
+    function attemptLogin() {
+      const code = document.getElementById('code-input').value;
+      socket.emit('auth', code);
+    }
+
+    socket.on('auth-success', () => {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('chat-screen').style.display = 'flex';
+    });
+
+    socket.on('auth-fail', () => {
+      document.getElementById('error-msg').style.display = 'block';
+    });
+
+    // Chat Logic
+    var form = document.getElementById('form');
+    var input = document.getElementById('input');
+    var messages = document.getElementById('messages');
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      if (input.value) {
+        // Send message object so we can ID who sent it
+        socket.emit('chat message', { text: input.value, id: socket.id });
+        input.value = '';
+      }
+    });
+
+    socket.on('chat message', function(msg) {
+      var item = document.createElement('li');
+      item.textContent = msg.text;
+      
+      // Check if I sent this message or she did
+      if (msg.id === socket.id) {
+        item.classList.add('my-message');
+      } else {
+        item.classList.add('other-message');
+      }
+      
+      messages.appendChild(item);
+      window.scrollTo(0, document.body.scrollHeight);
+    });
+  </script>
+</body>
+</html>
