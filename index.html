@@ -143,6 +143,9 @@
     <div id="form-container">
       <label for="img-upload" class="icon-btn"><i class="fas fa-image"></i></label>
       <input type="file" id="img-upload" accept="image/*" style="display:none" onchange="sendImage()" />
+
+      <label for="doc-upload" class="icon-btn"><i class="fas fa-paperclip"></i></label>
+      <input type="file" id="doc-upload" accept=".pdf,.doc,.docx,.txt,.zip" style="display:none" onchange="sendDoc()" />
       
       <input id="input" autocomplete="off" placeholder="Message..." />
       
@@ -273,6 +276,13 @@
         content += `<img src="${msg.text}" class="msg-img" />`;
       } else if (msg.type === 'audio') {
         content += `<audio controls src="${msg.text}"></audio>`;
+      } 
+      else if (msg.type === 'document') {
+        content += `<a href="${msg.text}" download="${msg.fileName}" style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 10px; text-decoration: none; color: white; margin-top: 5px;">
+                      <i class="fas fa-file-alt" style="font-size: 20px;"></i>
+                      <span style="font-size: 14px; text-decoration: underline;">${msg.fileName}</span>
+                      <i class="fas fa-download" style="font-size: 12px; margin-left: 5px;"></i>
+                    </a>`;
       }
 
       if(msg.isEdited) content += `<span class="edited-label">(edited)</span>`;
@@ -295,7 +305,26 @@
       reader.onload = (e) => socket.emit('chat message', { text: e.target.result, type: 'image' });
       reader.readAsDataURL(file);
     }
+    function sendDoc() {
+      const file = document.getElementById('doc-upload').files[0];
+      if (!file) return;
+      
+      // Safety check: Limit to 10MB
+      if(file.size > 10 * 1024 * 1024) {
+        return alert("File too big! Max 10MB.");
+      }
 
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        socket.emit('chat message', { 
+          text: e.target.result, 
+          type: 'document', 
+          fileName: file.name 
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+    
     let mediaRecorder;
     let audioChunks = [];
     const micBtn = document.getElementById('mic-btn');
@@ -403,4 +432,5 @@
   </script>
 </body>
 </html>
+
 
