@@ -1,181 +1,164 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Our Space</title>
+  <title>History Notes: Ch 4</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="icon" href="https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
-    :root { --primary: #3797f0; --bg: #000; --msg-bg: #262626; --text: #fff; --accent: #b100cd; }
+    /* --- STEALTH THEME: OFFICE DOCUMENT STYLE --- */
+    :root { --bg: #ffffff; --text: #333; --toolbar: #f1f3f4; --border: #dadce0; --highlight: #e8f0fe; }
     
     body { 
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+      font-family: Arial, sans-serif; 
       margin: 0; background: var(--bg); color: var(--text); height: 100dvh; 
       display: flex; flex-direction: column; overflow: hidden; 
     }
 
-    /* --- SCREEN MANAGEMENT --- */
-    /* This class handles showing/hiding different pages */
-    .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; background: #000; z-index: 100; transition: opacity 0.3s; }
+    .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; background: var(--bg); z-index: 100; }
     .hidden { display: none !important; }
 
-    /* --- 1. NEW HOME SCREEN (The 2 Buttons) --- */
-    #home-screen { justify-content: center; align-items: center; gap: 40px; }
-    
-    .big-btn { 
-      padding: 25px 30px; border-radius: 20px; font-size: 20px; font-weight: bold; 
-      border: none; color: white; cursor: pointer; width: 85%; max-width: 320px;
-      display: flex; align-items: center; justify-content: center; gap: 15px;
-      transition: transform 0.1s; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    /* 1. LOGIN SCREEN */
+    #auth-screen { justify-content: center; align-items: center; }
+    .box { border: 1px solid #ccc; padding: 20px; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center; background: #fff;}
+    h3 { margin-top: 0; color: #555; font-size: 16px; font-weight: normal;}
+    input.auth { padding: 8px; border: 1px solid #ccc; width: 200px; margin-bottom: 10px; }
+    button.btn { padding: 6px 15px; background: #1a73e8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; }
+
+    /* 2. SELECTION SCREEN */
+    #selection-screen { justify-content: center; align-items: center; }
+    .file-list { list-style: none; padding: 0; width: 250px; border: 1px solid #ccc; }
+    .file-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 14px;}
+    .file-item:hover { background: #f1f3f4; }
+    .file-icon { color: #5f6368; }
+
+    /* 3. INSTANT MSG SCREEN */
+    #instant-screen { align-items: center; padding-top: 50px; }
+    #instant-list { width: 90%; max-width: 400px; border: 1px solid #ccc; background: #fff; }
+    .instant-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; color: #333; font-size: 14px; display: flex; gap: 10px;}
+    .instant-item:hover { background: #e8f0fe; }
+    .instant-item i { color: #1a73e8; width: 20px; text-align: center;}
+
+    /* 4. CHAT SCREEN (Google Docs Look) */
+    #header { 
+      padding: 0 15px; border-bottom: 1px solid var(--border); background: #fff; 
+      display: flex; justify-content: space-between; align-items: center; height: 50px; flex-shrink: 0;
     }
-    .big-btn:active { transform: scale(0.96); }
-    
-    /* Login Button Gradient */
-    .btn-login { background: linear-gradient(135deg, #3797f0, #005cbf); }
-    /* Instant Msg Button Gradient */
-    .btn-instant { background: linear-gradient(135deg, #b100cd, #6a0080); }
+    #doc-info { line-height: 1.2; }
+    #doc-title { font-size: 18px; color: #202124; display: flex; align-items: center; gap: 10px;}
+    #online-status { font-size: 11px; color: #188038; background: #e6f4ea; padding: 2px 5px; border-radius: 3px; display: none;}
+    #doc-menu { font-size: 12px; color: #5f6368; }
+    #panic-btn { background: #d93025; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
 
-    /* --- 2. AUTH SCREEN (Shared for both) --- */
-    #auth-screen { justify-content: center; align-items: center; gap: 20px; }
-    input.auth { padding: 15px; background: #222; border: 1px solid #333; color: white; border-radius: 8px; width: 250px; font-size: 16px; outline: none; }
-    button.auth { padding: 15px 40px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
-    
-    .back-btn { position: absolute; top: 20px; left: 20px; background: none; border: none; color: #888; font-size: 24px; cursor: pointer; padding: 10px; }
-
-    /* --- 3. INSTANT OPTIONS GRID --- */
-    #instant-screen { background: #000; }
-    #instant-header { padding: 20px; text-align: center; color: #888; font-size: 14px; border-bottom: 1px solid #222; margin-top: 40px;}
-    
-    #instant-options { 
-      padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; 
-      align-content: start; overflow-y: auto; 
-    }
-    .quick-opt { 
-      background: #1a1a1a; border: 1px solid #333; color: white; 
-      padding: 25px 15px; border-radius: 15px; font-size: 16px; cursor: pointer;
-      display: flex; flex-direction: column; align-items: center; gap: 12px;
-      transition: 0.2s;
-    }
-    .quick-opt i { font-size: 28px; color: var(--accent); }
-    .quick-opt:active { background: var(--accent); border-color: var(--accent); transform: scale(0.95); }
-    .quick-opt:active i { color: white; }
-
-    /* --- 4. CHAT SCREEN (Your Existing Styles) --- */
-    #chat-screen { position: relative; }
-    
-    /* HEADER */
-    #header { padding: 15px; border-bottom: 1px solid #333; background: #111; display: flex; justify-content: space-between; align-items: center; font-weight: bold; height: 60px; box-sizing: border-box; flex-shrink: 0; }
-    .status-dot { height: 10px; width: 10px; background-color: #555; border-radius: 50%; display: inline-block; margin-right: 5px; }
-    .online { background-color: #00d647; box-shadow: 0 0 5px #00d647; }
-    #status-text { font-size: 12px; color: #00d647; font-weight: normal; }
-
-    /* MESSAGES */
     #messages { 
-      list-style: none; padding: 20px; padding-bottom: 90px; margin: 0; 
-      flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; 
-      -webkit-overflow-scrolling: touch; 
+      list-style: none; padding: 20px 40px; margin: 0; 
+      flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; 
     }
-    .msg-container { max-width: 75%; padding: 10px 15px; border-radius: 20px; position: relative; font-size: 15px; line-height: 1.4; word-wrap: break-word; user-select: none; }
-    .my-msg { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 5px; }
-    .other-msg { align-self: flex-start; background: var(--msg-bg); color: white; border-bottom-left-radius: 5px; }
-    .username-label { font-size: 10px; opacity: 0.7; margin-bottom: 4px; display: block; }
-    .edited-label { font-size: 10px; opacity: 0.6; font-style: italic; margin-left: 5px; }
-    
-    .msg-img { max-width: 100%; border-radius: 10px; display: block; margin-top: 5px; }
-    audio { height: 40px; width: 200px; filter: invert(1); margin-top: 5px; } 
+    @media (max-width: 600px) { #messages { padding: 15px; padding-bottom: 80px; } }
 
-    /* TYPING INDICATOR */
-    #typing-indicator { position: fixed; bottom: 70px; left: 20px; height: 20px; font-size: 16px; color: var(--accent); font-style: italic; font-weight: bold; z-index: 15; pointer-events: none;}
-    
-    /* REACTIONS */
-    .reaction-bar { position: absolute; bottom: -12px; right: 0; background: #222; border-radius: 12px; padding: 2px 6px; font-size: 12px; border: 1px solid #000; display: none; box-shadow: 0 2px 4px rgba(0,0,0,0.5); z-index: 10; }
+    .msg-container { font-size: 14px; line-height: 1.5; color: #000; position: relative; }
+    .my-msg { color: #000; font-weight: bold; }
+    .my-msg::before { content: "• "; }
+    .other-msg { color: #444; }
+    .other-msg::before { content: "- "; }
 
-    /* INPUT BAR */
+    .msg-img { max-width: 150px; border: 1px solid #ccc; display: block; margin: 5px 0; }
+    
+    /* DOCUMENT LINK STYLE */
+    .doc-link { color: #1a73e8; text-decoration: underline; cursor: pointer; font-family: monospace; }
+    .doc-link:hover { color: #174ea6; }
+
+    audio { height: 25px; margin-top: 5px; opacity: 0.8; }
+    #typing-indicator { position: fixed; bottom: 50px; left: 15px; font-size: 11px; color: #999; font-style: italic; }
+
     #form-container { 
-      position: fixed; bottom: 0; left: 0; width: 100%; padding: 10px; 
-      background: #000; display: flex; align-items: center; gap: 8px; 
-      border-top: 1px solid #333; box-sizing: border-box; z-index: 20;
-      padding-bottom: max(10px, env(safe-area-inset-bottom)); 
+      position: fixed; bottom: 0; left: 0; width: 100%; padding: 8px 10px; 
+      background: var(--toolbar); border-top: 1px solid var(--border); 
+      display: flex; gap: 10px; align-items: center; z-index: 20;
+      padding-bottom: max(10px, env(safe-area-inset-bottom)); box-sizing: border-box;
     }
-    #input { flex-grow: 1; padding: 12px; border-radius: 25px; border: 1px solid #333; background: #121212; color: white; outline: none; font-size: 16px; }
-    .icon-btn { background: none; border: none; color: white; font-size: 20px; cursor: pointer; padding: 8px; transition: 0.2s; }
-    .recording-anim { color: #ff3b30; animation: pulse 1s infinite; }
-    @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.1); } 100% { opacity: 1; transform: scale(1); } }
+    #input { flex-grow: 1; border: 1px solid #ccc; padding: 6px 10px; border-radius: 4px; outline: none; font-size: 14px; }
+    .tool-btn { color: #5f6368; background: none; border: none; font-size: 16px; cursor: pointer; padding: 5px; }
+    .tool-btn:hover { background: #dadce0; border-radius: 4px; }
+    .recording { color: red; animation: pulse 1s infinite; }
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-    /* CONTEXT MENU */
-    #context-menu { position: fixed; background: #1a1a1a; border: 1px solid #333; border-radius: 12px; display: none; flex-direction: column; width: 220px; z-index: 2000; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-    .ctx-item { padding: 15px; cursor: pointer; border-bottom: 1px solid #333; display: flex; align-items: center; gap: 15px; font-size: 14px; }
-    .ctx-item:active { background: #333; }
-    .ctx-danger { color: #ff4d4d; }
-    .emoji-row { display: flex; justify-content: space-between; padding: 10px 15px; background: #222; border-bottom: 1px solid #333; }
-    .emoji-opt { font-size: 24px; cursor: pointer; transition: transform 0.1s; }
-    .emoji-opt:active { transform: scale(1.4); }
+    #context-menu { position: fixed; background: #fff; border: 1px solid #ccc; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: none; flex-direction: column; width: 180px; z-index: 2000; font-size: 13px; }
+    .ctx-item { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #f1f3f4; display: flex; align-items: center; gap: 10px; }
+    .ctx-item:hover { background: #f1f3f4; }
+    .emoji-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; }
+    .emoji-opt { font-size: 20px; cursor: pointer; padding: 2px; }
+    .emoji-opt:hover { background: #e8f0fe; border-radius: 4px; }
     #menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; z-index: 1999; }
-
+    .reaction-mark { font-size: 10px; vertical-align: super; color: goldenrod; margin-left: 2px; }
   </style>
 </head>
 <body>
 
-  <div id="home-screen" class="screen">
-    <h1 style="font-size: 32px; margin-bottom: 20px;">Private Room</h1>
-    
-    <button class="big-btn btn-login" onclick="setupAuth('login')">
-      <i class="fas fa-comments"></i> Enter Chat
-    </button>
-    
-    <button class="big-btn btn-instant" onclick="setupAuth('instant')">
-      <i class="fas fa-bolt"></i> Instant Msg
-    </button>
+  <div id="auth-screen" class="screen">
+    <div class="box">
+      <h3>Document Password</h3>
+      <input id="secret-code" type="password" class="auth" placeholder="Enter Password" />
+      <br>
+      <button class="btn" onclick="checkLogin()">Unlock</button>
+    </div>
   </div>
 
-  <div id="auth-screen" class="screen hidden">
-    <button class="back-btn" onclick="goHome()"><i class="fas fa-arrow-left"></i></button>
-    
-    <h2 id="auth-title" style="margin-bottom: 20px;">Login</h2>
-    
-    <input id="username" class="auth" placeholder="Your Name" />
-    
-    <input id="secret-code" type="password" class="auth" placeholder="Secret Code" />
-    
-    <button class="auth" onclick="processAuth()">Go</button>
+  <div id="selection-screen" class="screen hidden">
+    <div class="box" style="padding: 0; border: none; box-shadow: none;">
+      <h3 style="margin-bottom: 10px;">Select Action</h3>
+      <ul class="file-list">
+        <li class="file-item" onclick="openChat()">
+          <i class="fas fa-file-alt file-icon"></i> Edit Notes (Chat)
+        </li>
+        <li class="file-item" onclick="openInstant()">
+          <i class="fas fa-list-ul file-icon"></i> Update Log (Instant Msg)
+        </li>
+      </ul>
+    </div>
   </div>
 
   <div id="instant-screen" class="screen hidden">
-    <button class="back-btn" onclick="goHome()"><i class="fas fa-times"></i></button>
-    <div id="instant-header">Tap to send immediately as "Instant Msg"</div>
-    
-    <div id="instant-options">
+    <div style="width: 90%; max-width: 400px; display: flex; justify-content: space-between; margin-bottom: 10px;">
+      <span style="font-weight: bold; color: #555;">Quick Actions</span>
+      <button onclick="goBack()" style="background: none; border: none; color: #d93025; cursor: pointer;">Close</button>
+    </div>
+    <div id="instant-list">
       <div class="quick-opt" onclick="sendInstant('I am Busy in Arranging Programs🚫')"><i class="fas fa-music"></i> Busy in Programs</div>
       <div class="quick-opt" onclick="sendInstant('I am Busy in Some Other Work🚫')"><i class="far fa-frown"></i> Busy in Other Work</div>
       <div class="quick-opt" onclick="sendInstant('Studying Today 📚')"><i class="fas fa-book"></i> Studying Today</div>
       <div class="quick-opt" onclick="sendInstant('Not Feeling Good Today')"><i class="fas fa-first-aid"></i> Not Feeling Good Today</div>
       <div class="quick-opt" onclick="sendInstant('I Will Call You Today📞')"><i class="fas fa-phone"></i> I Will Call Today</div>
       <div class="quick-opt" onclick="sendInstant('I Will Call You Tommorrow📞')"><i class="fas fa-phone"></i> I Will Call Tommorrow</div>
-      </div>
+    </div>
   </div>
 
   <div id="chat-screen" class="screen hidden">
     <div id="header">
-      <div style="display:flex; align-items:center;">
-        <span id="online-dot" class="status-dot"></span>
-        <span id="chat-title">Us</span>
+      <div id="doc-info">
+        <div id="doc-title">
+          History_Notes.docx 
+          <span id="online-status">Offline</span>
+        </div>
+        <div id="doc-menu">File &nbsp; Edit &nbsp; View &nbsp; Tools</div>
       </div>
-      <span id="status-text">Waiting...</span>
+      <button id="panic-btn" onclick="panic()">Exit</button>
     </div>
     
     <ul id="messages"></ul>
     <div id="typing-indicator"></div>
     
     <div id="form-container">
-      <label for="img-upload" class="icon-btn"><i class="fas fa-image"></i></label>
-      <input type="file" id="img-upload" accept="image/*" style="display:none" onchange="sendImage()" />
+      <label for="doc-upload" class="tool-btn" title="Insert File"><i class="fas fa-paperclip"></i></label>
+      <input type="file" id="doc-upload" accept=".pdf,.doc,.docx,.txt" style="display:none" onchange="sendDoc()" />
 
-      <label for="doc-upload" class="icon-btn"><i class="fas fa-paperclip"></i></label>
-      <input type="file" id="doc-upload" accept=".pdf,.doc,.docx,.txt,.zip" style="display:none" onchange="sendDoc()" />
+      <label for="img-upload" class="tool-btn" title="Insert Image"><i class="far fa-image"></i></label>
+      <input type="file" id="img-upload" accept="image/*" style="display:none" onchange="sendImage()" />
       
-      <input id="input" autocomplete="off" placeholder="Message..." />
-      
-      <button id="mic-btn" class="icon-btn"><i class="fas fa-microphone"></i></button>
-      <button id="send-btn" class="icon-btn" style="color: var(--primary);"><i class="fas fa-paper-plane"></i></button>
+      <button id="mic-btn" class="tool-btn" title="Dictate"><i class="fas fa-microphone"></i></button>
+
+      <input id="input" autocomplete="off" placeholder="Type..." />
+      <button id="send-btn" class="tool-btn" title="Save"><i class="fas fa-check"></i></button>
     </div>
   </div>
 
@@ -188,102 +171,65 @@
       <span class="emoji-opt" onclick="react('😢')">😢</span>
       <span class="emoji-opt" onclick="react('👍')">👍</span>
     </div>
-    <div class="ctx-item" id="btn-edit" onclick="startEdit()"><i class="fas fa-pen"></i> Edit Message</div>
-    <div class="ctx-item ctx-danger" id="btn-unsend" onclick="unsend()"><i class="fas fa-trash"></i> Unsend</div>
+    <div class="ctx-item" onclick="startEdit()"><i class="fas fa-pen"></i> Edit Line</div>
+    <div class="ctx-item" onclick="unsend()" style="color: #d93025;"><i class="fas fa-trash"></i> Delete Line</div>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
-    let myName = localStorage.getItem('chat_username') || "";
-    let authMode = 'login'; // 'login' or 'instant'
+    let myName = "Editor";
+    let selectedMsgId = null; 
+    let selectedMsgIsMine = false;
+    let typingTimer;
 
-    // --- NEW NAVIGATION LOGIC ---
-    
-    // 1. Go back to start
-    function goHome() {
-      document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
-      document.getElementById('home-screen').classList.remove('hidden');
-    }
-
-    // 2. Setup the Auth Screen based on which button was clicked
-    function setupAuth(mode) {
-      authMode = mode;
-      document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
-      document.getElementById('auth-screen').classList.remove('hidden');
-      
-      const title = document.getElementById('auth-title');
-      const nameInput = document.getElementById('username');
-      
-      if(mode === 'instant') {
-        title.innerText = "Instant Access ⚡";
-        nameInput.style.display = 'none'; // HIDE NAME INPUT
-      } else {
-        title.innerText = "Login 🔒";
-        nameInput.style.display = 'block'; // SHOW NAME INPUT
-        if(myName && myName !== "Instant Msg") nameInput.value = myName;
-      }
-    }
-
-    // 3. Process the Code/Name
-    function processAuth() {
+    // --- NAVIGATION ---
+    function checkLogin() {
       const code = document.getElementById('secret-code').value;
-      
-      if(authMode === 'login') {
-        const name = document.getElementById('username').value.trim();
-        if(!name || !code) return alert("Please enter name and code");
-        myName = name;
-        localStorage.setItem('chat_username', myName);
-        socket.emit('join', { code, username: myName });
-      } else {
-        // INSTANT MODE
-        if(!code) return alert("Please enter code");
-        // We set the name automatically
-        myName = "Instant Msg";
-        socket.emit('join', { code, username: myName });
-      }
+      if(code) socket.emit('join', { code, username: "Editor" });
     }
 
-    // 4. Handle Successful Auth
     socket.on('auth-success', () => {
       document.getElementById('auth-screen').classList.add('hidden');
-      
-      if(authMode === 'login') {
-        // Go to Chat
-        document.getElementById('chat-screen').classList.remove('hidden');
-        scrollToBottom();
+      document.getElementById('selection-screen').classList.remove('hidden');
+    });
+
+    socket.on('auth-fail', () => alert("Incorrect Password"));
+
+    function openChat() {
+      document.getElementById('selection-screen').classList.add('hidden');
+      document.getElementById('chat-screen').classList.remove('hidden');
+      scrollToBottom();
+    }
+    function openInstant() {
+      document.getElementById('selection-screen').classList.add('hidden');
+      document.getElementById('instant-screen').classList.remove('hidden');
+    }
+    function goBack() {
+      document.getElementById('instant-screen').classList.add('hidden');
+      document.getElementById('chat-screen').classList.add('hidden');
+      document.getElementById('selection-screen').classList.remove('hidden');
+    }
+
+    // --- ONLINE STATUS ---
+    socket.on('update-online-users', (users) => {
+      const statusBadge = document.getElementById('online-status');
+      if (users.length > 1) {
+        statusBadge.style.display = 'inline-block';
+        statusBadge.innerText = `${users.length} Editors Active`; 
       } else {
-        // Go to Instant Options
-        document.getElementById('instant-screen').classList.remove('hidden');
+        statusBadge.style.display = 'none';
       }
     });
 
-    // 5. Send Instant Message
+    // --- INSTANT MSG ---
     function sendInstant(text) {
       socket.emit('chat message', { text: text, type: 'text' });
-      alert(`Sent: "${text}"`);
-      // Reload page to logout/reset after sending
+      alert("Log Updated: " + text);
       location.reload(); 
     }
 
-    // --- EXISTING LOGIC BELOW ---
-    
-    socket.on('auth-fail', () => alert("Incorrect Code!"));
-
-    socket.on('update-online-users', (users) => {
-      const statusText = document.getElementById('status-text');
-      const dot = document.getElementById('online-dot');
-      const others = users.filter(u => u !== myName);
-      
-      if (others.length > 0) {
-        statusText.innerText = `${others.join(', ')} is online`;
-        dot.classList.add('online');
-      } else {
-        statusText.innerText = "Only you";
-        dot.classList.remove('online');
-      }
-    });
-
+    // --- CHAT LOGIC ---
     const messages = document.getElementById('messages');
     const input = document.getElementById('input');
 
@@ -299,10 +245,10 @@
         socket.emit('chat message', { text: input.value, type: 'text' });
         input.value = '';
         socket.emit('stop-typing');
-        input.focus();
       }
     };
 
+    // --- TYPING INDICATOR ---
     input.addEventListener('input', () => {
       socket.emit('typing');
       clearTimeout(typingTimer);
@@ -310,76 +256,57 @@
     });
 
     socket.on('display-typing', (user) => {
-      document.getElementById('typing-indicator').innerText = `${user} is typing...`;
+      document.getElementById('typing-indicator').innerText = "Editor is typing...";
     });
     socket.on('hide-typing', () => {
       document.getElementById('typing-indicator').innerText = '';
     });
 
-    socket.on('chat message', (msg) => {
-      addMessageToUI(msg);
-      scrollToBottom();
-    });
+    // Panic Button
+    function panic() { window.location.href = "https://www.google.com"; }
+    document.addEventListener('keydown', function(event) { if (event.key === "Escape") panic(); });
 
-    socket.on('load-history', (history) => {
-      messages.innerHTML = '';
-      history.forEach(addMessageToUI);
-      scrollToBottom();
-    });
+    socket.on('chat message', (msg) => { addMessageToUI(msg); scrollToBottom(); });
+    socket.on('load-history', (history) => { messages.innerHTML = ''; history.forEach(addMessageToUI); scrollToBottom(); });
 
-    function scrollToBottom() {
-      setTimeout(() => {
-        messages.scrollTop = messages.scrollHeight;
-      }, 50);
-    }
+    function scrollToBottom() { setTimeout(() => { messages.scrollTop = messages.scrollHeight; }, 50); }
 
     function addMessageToUI(msg) {
       const li = document.createElement('li');
-      li.className = `msg-container ${msg.username === myName ? 'my-msg' : 'other-msg'}`;
+      li.className = `msg-container ${msg.username === "Editor" ? 'my-msg' : 'other-msg'}`;
       li.id = msg._id;
       
-      li.oncontextmenu = (e) => showMenu(e, msg._id, msg.username === myName);
+      li.oncontextmenu = (e) => showMenu(e, msg._id, true); 
       let pressTimer;
-      li.ontouchstart = (e) => { pressTimer = setTimeout(() => showMenu(e, msg._id, msg.username === myName), 500); };
+      li.ontouchstart = (e) => { pressTimer = setTimeout(() => showMenu(e, msg._id, true), 500); };
       li.ontouchend = () => clearTimeout(pressTimer);
 
       let content = "";
-      if(msg.username !== myName) content += `<span class="username-label">${msg.username}</span>`;
-      
       if (msg.type === 'text') {
-        content += `<span class="msg-text">${msg.text}</span>`;
+        content += msg.text;
       } else if (msg.type === 'image') {
-        const downloadName = `photo_${Date.now()}.png`;
-        content += `<div style="position: relative; display: inline-block;">
+        const downloadName = `image_${Date.now()}.png`;
+        content += `<div style="position:relative; display:inline-block">
                       <img src="${msg.text}" class="msg-img" />
-                      <a href="${msg.text}" download="${downloadName}" style="position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.6); color: white; padding: 6px 10px; border-radius: 20px; text-decoration: none; font-size: 12px; backdrop-filter: blur(2px);">
-                        <i class="fas fa-download"></i> Save
-                      </a>
+                      <a href="${msg.text}" download="${downloadName}" style="font-size:10px; text-decoration:underline; color:#1a73e8; display:block">Save Image</a>
                     </div>`;
+      } else if (msg.type === 'document') {
+        // --- THIS IS THE DOCUMENT PART ---
+        content += `<a href="${msg.text}" download="${msg.fileName}" class="doc-link">[File: ${msg.fileName}]</a>`;
       } else if (msg.type === 'audio') {
         content += `<audio controls src="${msg.text}"></audio>`;
-      } 
-      else if (msg.type === 'document') {
-        content += `<a href="${msg.text}" download="${msg.fileName}" style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 10px; text-decoration: none; color: white; margin-top: 5px;">
-                      <i class="fas fa-file-alt" style="font-size: 20px;"></i>
-                      <span style="font-size: 14px; text-decoration: underline;">${msg.fileName}</span>
-                      <i class="fas fa-download" style="font-size: 12px; margin-left: 5px;"></i>
-                    </a>`;
       }
 
-      if(msg.isEdited) content += `<span class="edited-label">(edited)</span>`;
-
       li.innerHTML = content;
-      
-      const reactionDiv = document.createElement('div');
-      reactionDiv.className = 'reaction-bar';
-      reactionDiv.id = `react-${msg._id}`;
-      li.appendChild(reactionDiv);
-      updateReactionsUI(msg._id, msg.reactions);
 
+      if(msg.reactions) {
+        const vals = Object.values(msg.reactions);
+        if(vals.length > 0) li.innerHTML += `<span class="reaction-mark">${vals[0]}</span>`;
+      }
       messages.appendChild(li);
     }
 
+    // --- UPLOADS & VOICE ---
     function sendImage() {
       const file = document.getElementById('img-upload').files[0];
       if (!file) return;
@@ -387,22 +314,18 @@
       reader.onload = (e) => socket.emit('chat message', { text: e.target.result, type: 'image' });
       reader.readAsDataURL(file);
     }
+    
+    // --- SEND DOCUMENT FUNCTION ---
     function sendDoc() {
       const file = document.getElementById('doc-upload').files[0];
       if (!file) return;
-      if(file.size > 10 * 1024 * 1024) return alert("File too big! Max 10MB.");
+      if(file.size > 10 * 1024 * 1024) return alert("File too large");
       const reader = new FileReader();
-      reader.onload = (e) => {
-        socket.emit('chat message', { text: e.target.result, type: 'document', fileName: file.name });
-      };
+      reader.onload = (e) => socket.emit('chat message', { text: e.target.result, type: 'document', fileName: file.name });
       reader.readAsDataURL(file);
     }
-    
-    let mediaRecorder;
-    let audioChunks = [];
-    const micBtn = document.getElementById('mic-btn');
-    let isRecording = false;
 
+    let mediaRecorder; let audioChunks = []; const micBtn = document.getElementById('mic-btn'); let isRecording = false;
     micBtn.onclick = async () => {
       if (!isRecording) {
         try {
@@ -410,97 +333,32 @@
           mediaRecorder = new MediaRecorder(stream);
           mediaRecorder.start();
           isRecording = true;
-          micBtn.classList.add('recording-anim');
+          micBtn.classList.add('recording');
           audioChunks = [];
           mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
           mediaRecorder.onstop = () => {
              const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-             const reader = new FileReader();
-             reader.readAsDataURL(audioBlob);
-             reader.onloadend = () => {
-               socket.emit('chat message', { text: reader.result, type: 'audio' });
-             };
+             const reader = new FileReader(); reader.readAsDataURL(audioBlob);
+             reader.onloadend = () => socket.emit('chat message', { text: reader.result, type: 'audio' });
           };
-        } catch(err) {
-          alert("Microphone access denied! Check settings.");
-        }
-      } else {
-        mediaRecorder.stop();
-        isRecording = false;
-        micBtn.classList.remove('recording-anim');
-      }
+        } catch(err) { alert("Mic Error"); }
+      } else { mediaRecorder.stop(); isRecording = false; micBtn.classList.remove('recording'); }
     };
 
-    socket.on('message-unsent', (id) => {
-      const el = document.getElementById(id);
-      if(el) el.remove();
-    });
-
-    socket.on('message-edited', ({ messageId, newText }) => {
-      const el = document.getElementById(messageId);
-      if(el) {
-        const textSpan = el.querySelector('.msg-text');
-        if(textSpan) textSpan.innerText = newText;
-        if(!el.querySelector('.edited-label')) el.innerHTML += `<span class="edited-label">(edited)</span>`;
-      }
-    });
-
-    socket.on('update-reaction', ({ messageId, reactions }) => updateReactionsUI(messageId, reactions));
-
-    function updateReactionsUI(msgId, reactions) {
-      const el = document.getElementById(`react-${msgId}`);
-      if (!el) return;
-      const vals = reactions instanceof Map ? Array.from(reactions.values()) : Object.values(reactions);
-      if (vals.length > 0) {
-        el.style.display = 'block';
-        el.innerText = vals.join('');
-      } else {
-        el.style.display = 'none';
-      }
-    }
-
+    // --- MENU ---
     const menu = document.getElementById('context-menu');
     const overlay = document.getElementById('menu-overlay');
-
     function showMenu(e, msgId, isMine) {
       e.preventDefault();
       selectedMsgId = msgId;
-      selectedMsgIsMine = isMine;
-      
-      document.getElementById('btn-edit').style.display = isMine ? 'flex' : 'none';
-      document.getElementById('btn-unsend').style.display = isMine ? 'flex' : 'none';
+      let x = e.clientX; let y = e.clientY;
+      menu.style.left = x + 'px'; menu.style.top = y + 'px'; menu.style.display = 'flex'; overlay.style.display = 'block';
+    }
+    function closeMenu() { menu.style.display = 'none'; overlay.style.display = 'none'; }
+    function react(emoji) { if(selectedMsgId) socket.emit('react', { messageId: selectedMsgId, reaction: emoji }); closeMenu(); }
+    function unsend() { if(selectedMsgId) socket.emit('unsend-message', selectedMsgId); closeMenu(); }
+    function startEdit() { if(selectedMsgId) { const newText = prompt("Edit:"); if(newText) socket.emit('edit-message', { messageId: selectedMsgId, newText }); } closeMenu(); }
 
-      let x = e.clientX || e.touches[0].clientX;
-      let y = e.clientY || e.touches[0].clientY;
-      if (x + 220 > window.innerWidth) x = window.innerWidth - 230;
-
-      menu.style.left = x + 'px';
-      menu.style.top = y + 'px';
-      menu.style.display = 'flex';
-      overlay.style.display = 'block';
-    }
-
-    function closeMenu() {
-      menu.style.display = 'none';
-      overlay.style.display = 'none';
-    }
-
-    function react(emoji) {
-      if(selectedMsgId) socket.emit('react', { messageId: selectedMsgId, reaction: emoji });
-      closeMenu();
-    }
-    function unsend() {
-      if(selectedMsgId && selectedMsgIsMine) socket.emit('unsend-message', selectedMsgId);
-      closeMenu();
-    }
-    function startEdit() {
-      if(selectedMsgId && selectedMsgIsMine) {
-        const newText = prompt("Edit message:");
-        if(newText) socket.emit('edit-message', { messageId: selectedMsgId, newText });
-      }
-      closeMenu();
-    }
   </script>
 </body>
 </html>
-
