@@ -81,20 +81,36 @@
       display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; color: white;
     }
 
-    .msg-img { max-width: 100%; border-radius: 10px; margin-top: 5px; }
+    /* IMAGE STYLES + DOWNLOAD BTN */
+    .img-wrapper { position: relative; display: inline-block; }
+    .msg-img { max-width: 100%; border-radius: 10px; margin-top: 5px; display: block; }
+    .dl-btn-img {
+      position: absolute; bottom: 8px; right: 8px;
+      background: rgba(0,0,0,0.6); color: white;
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 14px;
+      border: 1px solid rgba(255,255,255,0.3);
+    }
     
-    /* Document Link Styling */
+    /* DOCUMENT STYLES + DOWNLOAD BTN */
     .doc-container {
       display: inline-flex; align-items: center; gap: 10px; 
       background: rgba(0,0,0,0.2); padding: 10px 15px; 
-      border-radius: 8px; margin-top: 5px; cursor: pointer;
-      border: 1px solid rgba(255,255,255,0.1); transition: 0.2s;
+      border-radius: 12px; margin-top: 5px; 
+      border: 1px solid rgba(255,255,255,0.1); 
+      max-width: 100%;
     }
-    .doc-container:hover { background: rgba(0,0,0,0.4); }
-    .doc-icon { font-size: 20px; color: inherit; }
-    .doc-name { font-size: 14px; text-decoration: underline; word-break: break-all;}
+    .doc-icon { font-size: 20px; color: inherit; flex-shrink: 0; }
+    .doc-name { font-size: 14px; text-decoration: none; word-break: break-all; flex-grow: 1; }
+    .dl-btn-doc {
+      background: rgba(255,255,255,0.1); width: 30px; height: 30px;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; flex-shrink: 0; margin-left: 5px;
+    }
+    .dl-btn-doc:active { background: rgba(255,255,255,0.3); }
 
-    /* --- 4. INPUT BAR --- */
+    /* --- 4. INPUT BAR (FIXED OVERLAP) --- */
     #form-container { 
       padding: 15px; background: var(--bg-color); 
       display: flex; justify-content: center; width: 100%;
@@ -103,26 +119,32 @@
     .input-wrapper {
       width: 100%; max-width: 800px;
       background: var(--input-bg); border-radius: 26px; padding: 5px 10px;
-      display: flex; align-items: center; gap: 5px;
+      display: flex; align-items: center; gap: 8px;
       border: 1px solid #424242; transition: 0.2s;
+      
+      /* THIS FIXES THE OVERLAP: */
+      flex-wrap: nowrap; 
     }
     
     .icon-btn {
       background: transparent; color: var(--text-dim); border: none;
       padding: 10px; font-size: 18px; cursor: pointer; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; /* Prevents buttons from squishing */
     }
     .icon-btn:hover { color: white; background: #424242; }
 
     #input { 
       flex-grow: 1; background: transparent; border: none; 
-      color: white; font-size: 16px; outline: none; padding: 10px;
+      color: white; font-size: 16px; outline: none; padding: 10px 5px;
+      min-width: 0; /* Critical for flexbox text overflow */
     }
 
     .send-btn { 
       background: transparent; color: var(--text-dim); border: none;
       padding: 8px; font-size: 16px; cursor: pointer; border-radius: 8px;
       display: flex; align-items: center; justify-content: center; transition: 0.2s;
+      flex-shrink: 0; /* Prevents send button from squishing */
     }
     .send-btn:hover { background: #424242; }
     .send-btn.active { background: var(--accent); color: white; }
@@ -245,38 +267,24 @@
 
     function scrollToBottom() { setTimeout(() => { messages.scrollTop = messages.scrollHeight; }, 50); }
 
-    // --- SAFE FILE DOWNLOAD FUNCTION ---
+    // --- SAFE DOWNLOAD LOGIC ---
     function downloadBase64File(base64Data, fileName) {
         try {
-            // Split metadata from data
             const arr = base64Data.split(',');
             const mime = arr[0].match(/:(.*?);/)[1];
             const bstr = atob(arr[1]);
             let n = bstr.length;
             const u8arr = new Uint8Array(n);
-            
-            while(n--){
-                u8arr[n] = bstr.charCodeAt(n);
-            }
-            
+            while(n--) u8arr[n] = bstr.charCodeAt(n);
             const blob = new Blob([u8arr], {type: mime});
             const url = URL.createObjectURL(blob);
-            
             const link = document.createElement('a');
             link.href = url;
             link.download = fileName;
             document.body.appendChild(link);
             link.click();
-            
-            // Clean up
-            setTimeout(() => {
-                document.body.removeChild(link);
-                window.URL.revokeObjectURL(url);
-            }, 100);
-        } catch(e) {
-            console.error("Download failed", e);
-            alert("Error downloading file.");
-        }
+            setTimeout(() => { document.body.removeChild(link); window.URL.revokeObjectURL(url); }, 100);
+        } catch(e) { console.error(e); alert("Download failed."); }
     }
 
     function addMessageToUI(msg) {
@@ -294,29 +302,36 @@
           contentHTML = `<span class="bubble-text">${msg.text}</span>`;
       } 
       else if (msg.type === 'image') {
-          contentHTML = `<img src="${msg.text}" class="msg-img">`;
-      } 
-      else if (msg.type === 'document') {
-          // --- FIXED DOCUMENT LOGIC ---
-          // We assign the click handler via JS, NOT HTML string to avoid freezing
-          const docId = "doc-" + msg._id;
+          // --- IMAGE WITH DOWNLOAD BTN ---
+          const btnId = "dl-img-" + msg._id;
           contentHTML = `
-            <div id="${docId}" class="doc-container">
-               <i class="fas fa-file-alt doc-icon"></i>
-               <span class="doc-name">${msg.fileName}</span>
-               <i class="fas fa-download" style="font-size:12px; margin-left:5px;"></i>
+            <div class="img-wrapper">
+               <img src="${msg.text}" class="msg-img">
+               <div id="${btnId}" class="dl-btn-img"><i class="fas fa-download"></i></div>
             </div>
           `;
-          
-          // Attach safe download listener after render
           setTimeout(() => {
-             const el = document.getElementById(docId);
-             if(el) {
-                 el.onclick = (e) => {
-                     e.stopPropagation(); // Stop menu opening
-                     downloadBase64File(msg.text, msg.fileName);
-                 }
-             }
+             document.getElementById(btnId).onclick = (e) => {
+                 e.stopPropagation();
+                 downloadBase64File(msg.text, "image_" + Date.now() + ".png");
+             };
+          }, 0);
+      } 
+      else if (msg.type === 'document') {
+          // --- DOCUMENT WITH DOWNLOAD BTN ---
+          const btnId = "dl-doc-" + msg._id;
+          contentHTML = `
+            <div class="doc-container">
+               <i class="fas fa-file-alt doc-icon"></i>
+               <span class="doc-name">${msg.fileName}</span>
+               <div id="${btnId}" class="dl-btn-doc"><i class="fas fa-download"></i></div>
+            </div>
+          `;
+          setTimeout(() => {
+             document.getElementById(btnId).onclick = (e) => {
+                 e.stopPropagation();
+                 downloadBase64File(msg.text, msg.fileName);
+             };
           }, 0);
       }
 
@@ -350,9 +365,7 @@
     function sendDoc() {
       const file = document.getElementById('doc-upload').files[0];
       if(!file) return;
-      // Increased Limit slightly to 12MB, but warned user
       if(file.size > 12 * 1024 * 1024) return alert("File too large (Max 12MB)");
-      
       const reader = new FileReader();
       reader.onload = (e) => {
           socket.emit('chat message', { text: e.target.result, type: 'document', fileName: file.name });
