@@ -59,17 +59,20 @@
     
     .msg-row { display: flex; width: 100%; }
     
+    /* User (Left) */
     .row-user { justify-content: flex-start; }
-    .row-user .msg-bubble { background: var(--bubble-user); border-top-left-radius: 2px; color: white; }
+    .row-user .msg-bubble { background: var(--bubble-user); border-top-left-radius: 2px; color: white; cursor: pointer; }
+    .row-user .msg-bubble:active { filter: brightness(0.9); } /* Visual feedback when clicking */
     .row-user .avatar { display: none; } 
 
+    /* AI (Right) */
     .row-ai { justify-content: flex-end; }
     .row-ai .msg-bubble { background: var(--bubble-ai); border-top-right-radius: 2px; }
     .row-ai .avatar { margin-left: 10px; background: var(--accent); order: 2; } 
 
     .msg-bubble {
       max-width: 80%; padding: 12px 16px; border-radius: 18px;
-      font-size: 16px; line-height: 1.5; position: relative; word-wrap: break-word;
+      font-size: 16px; line-height: 1.5; position: relative; word-wrap: break-word; user-select: none;
     }
 
     .avatar { 
@@ -77,13 +80,8 @@
       display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; color: white;
     }
 
-    .edit-btn { margin-top: 5px; font-size: 12px; opacity: 0.7; cursor: pointer; display: block; }
-    .row-user .edit-btn { text-align: left; }
-    .row-ai .edit-btn { text-align: right; }
-
     .msg-img { max-width: 100%; border-radius: 10px; margin-top: 5px; }
     .doc-link { display: inline-flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: 8px; margin-top: 5px; color: inherit; text-decoration: none; }
-    audio { height: 35px; margin-top: 5px; max-width: 220px; border-radius: 20px;}
 
     /* --- 4. INPUT BAR --- */
     #form-container { 
@@ -98,8 +96,6 @@
       border: 1px solid #424242; transition: 0.2s;
     }
     
-    .input-wrapper.recording { border-color: #ef4444; background: #3a2020; }
-
     .icon-btn {
       background: transparent; color: var(--text-dim); border: none;
       padding: 10px; font-size: 18px; cursor: pointer; border-radius: 50%;
@@ -112,20 +108,18 @@
       color: white; font-size: 16px; outline: none; padding: 10px;
     }
 
-    /* SEND BUTTON (Visible Now) */
     .send-btn { 
       background: transparent; color: var(--text-dim); border: none;
       padding: 8px; font-size: 16px; cursor: pointer; border-radius: 8px;
       display: flex; align-items: center; justify-content: center; transition: 0.2s;
     }
     .send-btn:hover { background: #424242; }
-    
-    /* Active State (Green) */
     .send-btn.active { background: var(--accent); color: white; }
 
-    /* Context Menu */
-    #context-menu { position: fixed; background: #2f2f2f; border: 1px solid #444; border-radius: 8px; display: none; flex-direction: column; width: 120px; z-index: 2000; }
-    .ctx-item { padding: 12px; cursor: pointer; color: #ececf1; font-size: 14px; border-bottom: 1px solid #3e3e3e; }
+    /* --- MENU --- */
+    #context-menu { position: fixed; background: #2f2f2f; border: 1px solid #444; border-radius: 8px; display: none; flex-direction: column; width: 120px; z-index: 2000; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+    .ctx-item { padding: 12px 15px; cursor: pointer; color: #ececf1; font-size: 14px; border-bottom: 1px solid #3e3e3e; display: flex; align-items: center; gap: 10px; }
+    .ctx-item:hover { background: #3e3e3e; }
     #menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; z-index: 1999; }
 
   </style>
@@ -167,8 +161,6 @@
 
         <input id="input" autocomplete="off" placeholder="Ask anything" />
         
-        <button id="mic-btn" class="icon-btn"><i class="fas fa-microphone-lines"></i></button>
-
         <button id="send-btn" class="send-btn"><i class="fas fa-arrow-up"></i></button>
       </div>
     </div>
@@ -176,13 +168,15 @@
 
   <div id="menu-overlay" onclick="closeMenu()"></div>
   <div id="context-menu">
-    <div class="ctx-item" onclick="unsend()" style="color:#ef4444;">Delete Message</div>
+    <div class="ctx-item" onclick="startEdit()"><i class="fas fa-pen"></i> Edit</div>
+    <div class="ctx-item" onclick="unsend()" style="color:#ef4444;"><i class="fas fa-trash"></i> Delete</div>
   </div>
 
   <script>
     const socket = io();
     let myName = ""; 
     let selectedMsgId = null;
+    let selectedMsgText = "";
 
     function login() {
       const btn = document.getElementById('login-btn');
@@ -214,14 +208,12 @@
     const input = document.getElementById('input');
     const sendBtn = document.getElementById('send-btn');
     
-    // Typing Listener
     input.addEventListener('input', () => {
       if (input.value.trim().length > 0) sendBtn.classList.add('active');
       else sendBtn.classList.remove('active');
       socket.emit('typing');
     });
 
-    // Enter Key
     input.addEventListener("keypress", function(event) {
       if (event.key === "Enter") { 
         event.preventDefault(); 
@@ -229,7 +221,6 @@
       }
     });
 
-    // Send Button Click
     sendBtn.onclick = () => {
       if (input.value.trim()) {
         socket.emit('chat message', { text: input.value, type: 'text' });
@@ -247,6 +238,7 @@
       const li = document.createElement('li');
       const isAI = (msg.username === "ChatGPT");
       
+      // FLIPPED LOGIC: AI is RIGHT, User is LEFT
       li.className = `msg-row ${isAI ? 'row-ai' : 'row-user'}`;
       li.id = msg._id;
       
@@ -256,33 +248,29 @@
       if (msg.type === 'text') content = msg.text;
       else if (msg.type === 'image') content = `<img src="${msg.text}" class="msg-img">`;
       else if (msg.type === 'document') content = `<a class="doc-link" href="${msg.text}" download="${msg.fileName}"><i class="fas fa-file"></i> ${msg.fileName}</a>`;
-      else if (msg.type === 'audio') content = `<audio controls src="${msg.text}"></audio>`;
-
-      const editHTML = `<div class="edit-btn" onclick="startEdit('${msg._id}', '${msg.text.replace(/'/g, "\\'")}')"><i class="fas fa-pen"></i></div>`;
 
       li.innerHTML = `
         ${avatarHTML}
         <div class="msg-bubble">
-          ${content}
-          ${editHTML}
+          <span class="bubble-text">${content}</span>
         </div>
       `;
 
-      li.oncontextmenu = (e) => { e.preventDefault(); selectedMsgId = msg._id; showMenu(e); };
-      let pressTimer;
-      li.ontouchstart = (e) => { pressTimer = setTimeout(() => { selectedMsgId = msg._id; showMenu(e); }, 500); };
-      li.ontouchend = () => clearTimeout(pressTimer);
+      // CLICK EVENT TO OPEN MENU
+      li.onclick = (e) => {
+        // Only allow options for MY messages
+        if (msg.username === myName) {
+            e.stopPropagation(); // Prevent bubbling
+            selectedMsgId = msg._id;
+            selectedMsgText = msg.text; // Save text for editing
+            showMenu(e);
+        }
+      };
 
       messages.appendChild(li);
     }
 
-    function startEdit(msgId, oldText) {
-      const newText = prompt("Edit message:", oldText);
-      if (newText !== null && newText !== oldText) {
-        socket.emit('edit-message', { messageId: msgId, newText });
-      }
-    }
-
+    // --- UPLOADS ---
     function sendImage() {
       const file = document.getElementById('img-upload').files[0];
       if(!file) return;
@@ -299,66 +287,59 @@
       reader.readAsDataURL(file);
     }
 
-    // --- VOICE NOTES ---
-    let mediaRecorder; 
-    let audioChunks = []; 
-    const micBtn = document.getElementById('mic-btn'); 
-    const inputBox = document.getElementById('input-box');
-    let isRecording = false;
-
-    micBtn.onclick = async () => {
-      if (!isRecording) {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          mediaRecorder = new MediaRecorder(stream);
-          audioChunks = [];
-          
-          mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
-          
-          mediaRecorder.onstop = () => {
-             if(audioChunks.length > 0) {
-                 const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                 const reader = new FileReader();
-                 reader.readAsDataURL(audioBlob);
-                 reader.onloadend = () => {
-                    socket.emit('chat message', { text: reader.result, type: 'audio' });
-                 };
-             }
-          };
-
-          mediaRecorder.start();
-          isRecording = true;
-          inputBox.classList.add('recording');
-          micBtn.style.color = "#ef4444"; 
-          document.getElementById('input').placeholder = "Recording...";
-
-        } catch(err) { alert("Microphone denied."); }
-      } else {
-        if(mediaRecorder) {
-            mediaRecorder.stop();
-            mediaRecorder.stream.getTracks().forEach(track => track.stop());
-        }
-        isRecording = false;
-        inputBox.classList.remove('recording');
-        micBtn.style.color = "#b4b4b4"; 
-        document.getElementById('input').placeholder = "Ask anything";
-      }
-    };
-
-    const menu = document.getElementById('context-menu'); const overlay = document.getElementById('menu-overlay');
+    // --- MENU LOGIC ---
+    const menu = document.getElementById('context-menu'); 
+    const overlay = document.getElementById('menu-overlay');
+    
     function showMenu(e) {
-      let x = e.clientX || e.touches[0].clientX; let y = e.clientY || e.touches[0].clientY;
-      menu.style.left = x + 'px'; menu.style.top = y + 'px'; menu.style.display = 'flex'; overlay.style.display = 'block';
-    }
-    function closeMenu() { menu.style.display = 'none'; overlay.style.display = 'none'; }
-    function unsend() { if(selectedMsgId) socket.emit('unsend-message', selectedMsgId); closeMenu(); }
+      // Position menu near the mouse click
+      let x = e.clientX; 
+      let y = e.clientY;
+      
+      // Prevent menu from going off screen (Basic check)
+      if (x + 120 > window.innerWidth) x = window.innerWidth - 130;
+      if (y + 100 > window.innerHeight) y = window.innerHeight - 110;
 
-    socket.on('message-unsent', (id) => { const el = document.getElementById(id); if(el) el.remove(); });
+      menu.style.left = x + 'px'; 
+      menu.style.top = y + 'px'; 
+      menu.style.display = 'flex'; 
+      overlay.style.display = 'block';
+    }
+
+    function closeMenu() { 
+      menu.style.display = 'none'; 
+      overlay.style.display = 'none'; 
+    }
+
+    function unsend() { 
+      if(selectedMsgId) socket.emit('unsend-message', selectedMsgId); 
+      closeMenu(); 
+    }
+
+    function startEdit() { 
+      if(selectedMsgId) { 
+        // Pre-fill the prompt with the old text
+        const newText = prompt("Edit message:", selectedMsgText);
+        if(newText !== null && newText !== selectedMsgText) {
+            socket.emit('edit-message', { messageId: selectedMsgId, newText }); 
+        }
+      } 
+      closeMenu(); 
+    }
+    
+    socket.on('message-unsent', (id) => { 
+        const el = document.getElementById(id); 
+        if(el) el.remove(); 
+    });
+    
     socket.on('message-edited', ({ messageId, newText }) => {
       const el = document.getElementById(messageId);
       if(el) {
-         const bubble = el.querySelector('.msg-bubble');
-         if(bubble) bubble.innerHTML = newText + `<div class="edit-btn" onclick="startEdit('${messageId}', '${newText.replace(/'/g, "\\'")}')"><i class="fas fa-pen"></i></div>`;
+         const bubbleText = el.querySelector('.bubble-text');
+         if(bubbleText) bubbleText.innerText = newText;
+         
+         // Update internal variable if we are the one who edited
+         if (selectedMsgId === messageId) selectedMsgText = newText;
       }
     });
 
