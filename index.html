@@ -30,24 +30,15 @@
     .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; background: var(--bg-color); z-index: 100; }
     .hidden { display: none !important; }
 
-    /* --- OFFICIAL LOGO STYLE --- */
-    /* This makes the SVG white and puts it on a green background */
-    .official-logo {
-      background-color: #10a37f;
-      filter: invert(1); /* Turns the black lines white */
-      border-radius: 50%;
-      padding: 4px; /* Space inside */
-    }
-
     /* --- 1. LOGIN --- */
     #auth-screen { justify-content: center; align-items: center; text-align: center; background: #000; }
     .login-container { width: 320px; padding: 40px 0; }
     
-    /* Login Logo Specifics */
+    /* Login Logo */
     .gpt-logo-big { 
-      width: 80px; height: 80px; 
+      width: 60px; height: 60px; 
       margin-bottom: 25px; 
-      padding: 15px; /* Bigger padding for the big logo */
+      display: block; margin-left: auto; margin-right: auto;
     }
     
     h2 { font-weight: 600; margin-bottom: 25px; font-size: 32px; }
@@ -70,8 +61,8 @@
       gap: 8px; cursor: default; padding: 8px 12px; border-radius: 8px; user-select: none;
     }
     
-    /* Header Logo Specifics */
-    .header-logo-small { width: 24px; height: 24px; padding: 3px; }
+    /* Header Logo (Small) */
+    .header-logo { width: 20px; height: 20px; }
     
     .model-name { font-size: 18px; font-weight: 700; color: #d1d5db; }
     .header-right { flex: 1; display: flex; justify-content: flex-end; }
@@ -92,15 +83,27 @@
 
     .row-ai { justify-content: flex-end; }
     .row-ai .msg-bubble { background: var(--bubble-ai); border-top-right-radius: 2px; }
-    .row-ai .avatar { margin-left: 10px; flex-shrink: 0; order: 2; } 
-
-    /* AI Avatar Specifics (The small message logo) */
-    .avatar-logo { width: 30px; height: 30px; padding: 4px; }
+    
+    /* AI Avatar: Green Circle with White Logo */
+    .row-ai .avatar { 
+      margin-left: 10px; 
+      background: var(--accent); /* OpenAI Green Background */
+      order: 2; 
+      padding: 4px;
+    } 
 
     .msg-bubble {
       max-width: 85%; padding: 12px 16px; border-radius: 18px;
       font-size: 16px; line-height: 1.5; position: relative; word-wrap: break-word; user-select: none;
     }
+
+    .avatar { 
+      width: 30px; height: 30px; border-radius: 50%; 
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; color: white;
+    }
+    
+    /* The logo image inside the avatar */
+    .avatar-img { width: 100%; height: 100%; }
 
     .msg-img { max-width: 100%; border-radius: 10px; margin-top: 5px; display: block; }
     .img-wrapper { position: relative; display: inline-block; cursor: zoom-in; }
@@ -136,7 +139,7 @@
 
   <div id="auth-screen" class="screen">
     <div class="login-container">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg" class="official-logo gpt-logo-big">
+      <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MSA0MSI+PHBhdGggZmlsbD0iI2ZmZiIgZD0iTTM3LjUzNiAyMS45NDRjMi4zMDYtNC4wNiAxLjcxLTkuMjc3LTEuNDEzLTExLjgyLTMuMTI1LTIuNTQyLTcuNjEyLTMuMDcxLTExLjIxLTEuMzE4LTEuNjIyLTMuODQ1LTUuNTI1LTYuMzU2LTkuNzg0LTYuMzAxLTQuNTQ4LjA1OC04LjU1NiAyLjk1NS05Ljk1IDcuMTkzLTMuOTg3LS41MjItNy45NyAxLjk3LTkuMjYgNi4wMzYtMS4yOTEgNC4wNjQuMTUgOC41NjYgMy42MSAxMS4yNy0xLjEyIDMuOTE1LjE4IDguMjggMy4zMDQgMTEuMDUgMy4xMjYgMi43NyA3Ljc4MiAzLjM2IDEyLjAyIDEuNDUgMS42OSAzLjg4IDUuNTIgNi4zNTUgOS43ODIgNi4zMDYgNC41NjgtLjA1OCA4LjU3OC0yLjk4NCA5Ljk1LTcuMTkzIDMuOTg3LjUyMiA3Ljk3LTEuOTcgOS4yNi02LjAzNiAxLjI5LTQuMDY0LS4xNS04LjU2Ni0zLjYxLTExLjI3em0tNC43OTctLjM1MWMwIDEuNTQ1LS42IDEuNTQ1LS45IDIuMTVsLTMuODk4IDYuNzQ3Yy0uMTUuMjUtLjQuMzUtLjY1LjM1LS4xNSAwLS4zNS0uMDUtLjQ1LS4xNWwtMS0uNTljLS40LS4yLS42NS0uNjUtLjY1LTEuMSAwLS4xNSAwLS4zLjA1LS40NWwxLjU1LTUuNDk3Yy4xLS4zNS4zNS0uNi43LS44LjM1LS4yLjcyLS4yNSAxLjE1LS4xNWwyLjE1LjY1Yy4zNS4xLjY1LjM1LjgwNS43bC4wNS4xem0tMy4zOTgtMTQuODQzbC0uMzUuMTUtLjU1LS4zYzAtLjA1LS41LS43LS45LTEuMzUtMS44LTItMy45OTgtMi44NDgtNi40OTctMi41LTQuODk4LjY1LTcuOTQ2IDQuNDUtNy43OTYgOC42NDZsLjE1IDEuMTUtMS4zLS43NWMtLjM1LS4yLS43NS0uMi0xLjEtLjE1LS4zNS4xLS42NS4zNS0uODUuNjVsLTIuMiAzLjc5OGMtLjIuMzUtLjIuNzUtLjA1IDEuMS4xNS4zNS40NS41NS44NS42bDUuNDk2IDEuNWMuMDUtLjAxLjEwMS0uMDIuMTUuMDIuMzUuMS42LjM1LjguNzVsMy44OTggNi43NDdjLjE1LjI1LjM1LjQuNzUuNCAyLjM1LjA1IDQuODQ4LS41IDYuOTk3LTEuNTk4IDIuMTUtMS4xIDMuODQ3LTIuODUgNC42OTctNC45NTUuNTUtMS4zNS44LTUuNzQ3LS45LTguNjk3bC0uMS0uMTV6bS0yNC42OTIgNC4xNDhsMi4zOTgtNC4xNDhjLjItLjM1LjU1LS41NS45NS0uNTUuNCAwIC43NS4yIDEgLjU1bDEuOTk4IDMuNWMuMS4yLjE1LjQuMTUuNiAwIC40NS0uMi44LS41NSAxLjAyTDUuNzk1IDE3LjU5Yy0uMzUuMi0uNzUuMi0xLjEgMGwtMi4xLS42Yy0uNC0uMS0uNjUtLjQ1LS44LS44LS4xLS40LS4wNS0uOC4yLTEuMXptMi41NDggMTIuNTQzbC4zNS0uMTUuNTUuM2MuMDUuMDUuNS43LjkxLjM1IDEuNzk4IDEuOTk4IDMuOTk3IDIuODQ4IDYuNDk2IDIuNWw0Ljg5OC0uNjUgNy45NDctNC40NDggNy43OTctOC42NDctLjE1LTEuMTUgMS4zLjc1Yy4zNS4yLjc1LjIgMS4xLjE1LjM1LS4xLjY1LS4zNS44NS0uNjVsMi4yLTMuNzk4Yy4yLS4zNS4yLS43NS4wNS0xLjEtLjE1LS4zNS0uNDUtLjU1LS44NS0uNmwtNS40OTctMS41Yy0uMDUtLjAxLS4xMDEtLjAyLS4xNS4wMi0uMzUtLjEtLjYtLjM1LS44LS43NWwtMy44OTgtNi43NDdjLS4xNS0uMjUtLjM1LS40LS43NS0uNC0yLjM1LS4wNS00Ljg0OC41LTYuOTk3IDEuNTk4LTIuMTUgMS4xLTMuODQ3IDIuODUtNC42OTcgNC45NTUtLjU1IDEuMzUtLjggNS43NDcuOSA4LjY5N2wuMS4xNXptMjAuMjkyLTYuMTQ4bC0yLjM5OCA0LjE0OGMtLjIuMzUtLjU1LjU1LS45NS41NS0uNCAwLS43NS0uMi0xLS41NWwtMS45OTgtMy41Yy0uMS0uMi0uMTUtLjQtLjE1LS42IDAtLjQ1LjItLjguNTUtMS4wMmwtNS0zLjU5OGMtLjM1LS4yLS43NS0uMi0xLjEgMGwyLjEuNmMuNC4xLjY1LjQ1LjguOC4xLjQuMDUuOC0uMiAxLjF6Ii8+PC9zdmc+" class="gpt-logo-big">
       
       <h2>Welcome back</h2>
       <div class="input-group"><label class="input-label">Email address</label><input id="username" class="auth" type="text" /></div>
@@ -150,7 +153,7 @@
       <div class="header-left"><i class="fas fa-bars hamburger"></i></div>
       
       <div class="model-selector">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg" class="official-logo header-logo-small">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MSA0MSI+PHBhdGggZmlsbD0iI2ZmZiIgZD0iTTM3LjUzNiAyMS45NDRjMi4zMDYtNC4wNiAxLjcxLTkuMjc3LTEuNDEzLTExLjgyLTMuMTI1LTIuNTQyLTcuNjEyLTMuMDcxLTExLjIxLTEuMzE4LTEuNjIyLTMuODQ1LTUuNTI1LTYuMzU2LTkuNzg0LTYuMzAxLTQuNTQ4LjA1OC04LjU1NiAyLjk1NS05Ljk1IDcuMTkzLTMuOTg3LS41MjItNy45NyAxLjk3LTkuMjYgNi4wMzYtMS4yOTEgNC4wNjQuMTUgOC41NjYgMy42MSAxMS4yNy0xLjEyIDMuOTE1LjE4IDguMjggMy4zMDQgMTEuMDUgMy4xMjYgMi43NyA3Ljc4MiAzLjM2IDEyLjAyIDEuNDUgMS42OSAzLjg4IDUuNTIgNi4zNTUgOS43ODIgNi4zMDYgNC41NjgtLjA1OCA4LjU3OC0yLjk4NCA5Ljk1LTcuMTkzIDMuOTg3LjUyMiA3Ljk3LTEuOTcgOS4yNi02LjAzNiAxLjI5LTQuMDY0LS4xNS04LjU2Ni0zLjYxLTExLjI3em0tNC43OTctLjM1MWMwIDEuNTQ1LS42IDEuNTQ1LS45IDIuMTVsLTMuODk4IDYuNzQ3Yy0uMTUuMjUtLjQuMzUtLjY1LjM1LS4xNSAwLS4zNS0uMDUtLjQ1LS4xNWwtMS0uNTljLS40LS4yLS42NS0uNjUtLjY1LTEuMSAwLS4xNSAwLS4zNS4wNS0uNDVsMS41NS01LjQ5N2MuMS0uMzUuMzUtLjYuNy0uOC4zNS0uMi43Mi0uMjUgMS4xNS0uMTVsMi4xNS42NWMuMzUuMS42NS4zNS44MDUuN2wuMDUuMXptLTMuMzk4LTE0Ljg0M2wtLjM1LjE1LS41NS0uM2MwLS4wNS0uNS0uNy0uOS0xLjM1LTEuOC0yLTMuOTk4LTIuODQ4LTYuNDk3LTIuNS00Ljg5OC42NS03Ljk0NiA0LjQ1LTcuNzk2IDguNjQ2bC4xNSAxLjE1LTEuMy0uNzVjLS4zNS0uMi0uNzUtLjItMS4xLS4xNS0uMzUuMS0uNjUuMzUtLjg1LjY1bC0yLjIgMy43OThjLS4yLjM1LS4yLjc1LS4wNSAxLjEuMTUuMzUuNDUuNTUuODUuNmU1LjQ5NiAxLjVjLjA1LS4wMS4xMDEtLjAyLjE1LjAyLjM1LjEuNi4zNS44Ljc1bDMuODk4IDYuNzQ3Yy4xNS4yNS4zNS40Ljc1LjQgMi4zNS4wNSA0Ljg0OC0uNSA2Ljk5Ny0xLjU5OCAyLjE1LTEuMSAzLjg0Ny0yLjg1IDQuNjk3LTQuOTU1LjU1LTEuMzUuOCA1Ljc0Ny0uOSA4LjY5N2wtLjEuMTV6bS0yNC42OTIgNC4xNDhsMi4zOTgtNC4xNDhjLjItLjM1LjU1LS41NS45NS0uNTUuNCAwIC43NS4yIDEgLjU1bDEuOTk4IDMuNWMuMS4yLjE1LjQuMTUuNiAwIC40NS0uMi44LS41NSAxLjAyTDUuNzk1IDE3LjU5Yy0uMzUuMi0uNzUuMi0xLjEgMGwtMi4xLS42Yy0uNC0uMS0uNjUtLjQ1LS44LS44LS4xLS40LS4wNS0uOC4yLTEuMXptMi41NDggMTIuNTQzbC4zNS0uMTUuNTUuM2MuMDUuMDUuNS43LjkxLjM1IDEuNzk4IDEuOTk4IDMuOTk3IDIuODQ4IDYuNDk2IDIuNWw0Ljg5OC0uNjUgNy45NDctNC40NDggNy43OTctOC42NDctLjE1LTEuMTUgMS4zLjc1Yy4zNS4yLjc1LjIgMS4xLjE1LjM1LS4xLjY1LS4zNS44NS0uNjVsMi4yLTMuNzk4Yy4yLS4zNS4yLS43NS4wNS0xLjEtLjE1LS4zNS0uNDUtLjU1LS44NS0uNmwtNS40OTctMS41Yy0uMDUtLjAxLS4xMDEtLjAyLS4xNS4wMi0uMzUtLjEtLjYtLjM1LS44LS43NWwtMy44OTgtNi43NDdjLS4xNS0uMjUtLjM1LS40LS43NS0uNC0yLjM1LS4wNS00Ljg0OC41LTYuOTk3IDEuNTk4LTIuMTUgMS4xLTMuODQ3IDIuODUtNC42OTcgNC45NTUtLjU1IDEuMzUtLjggNS43NDcuOSA4LjY5N2wuMS4xNXptMjAuMjkyLTYuMTQ4bC0yLjM5OCA0LjE0OGMtLjIuMzUtLjU1LjU1LS45NS41NS0uNCAwLS43NS0uMi0xLS41NWwtMS45OTgtMy41Yy0uMS0uMi0uMTUtLjQtLjE1LS42IDAtLjQ1LjItLjguNTUtMS4wMmwtNS0zLjU5OGMtLjM1LS4yLS43NS0uMi0xLjEgMGwyLjEuNmMuNC4xLjY1LjQ1LjguOC4xLjQuMDUuOC0uMiAxLjF6Ii8+PC9zdmc+" class="official-logo header-logo-small">
         <span class="model-name">ChatGPT 4.0</span>
       </div>
 
@@ -247,10 +250,10 @@
       li.className = `msg-row ${isAI ? 'row-ai' : 'row-user'}`;
       li.id = msg._id;
       
-      // OFFICIAL AVATAR LOGO FOR MESSAGES
+      // OFFICIAL LOGO AVATAR FOR AI
       const avatarHTML = isAI ? 
         `<div class="avatar">
-           <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg" class="official-logo avatar-logo">
+           <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MSA0MSI+PHBhdGggZmlsbD0iI2ZmZiIgZD0iTTM3LjUzNiAyMS45NDRjMi4zMDYtNC4wNiAxLjcxLTkuMjc3LTEuNDEzLTExLjgyLTMuMTI1LTIuNTQyLTcuNjEyLTMuMDcxLTExLjIxLTEuMzE4LTEuNjIyLTMuODQ1LTUuNTI1LTYuMzU2LTkuNzg0LTYuMzAxLTQuNTQ4LjA1OC04LjU1NiAyLjk1NS05Ljk1IDcuMTkzLTMuOTg3LS41MjItNy45NyAxLjk3LTkuMjYgNi4wMzYtMS4yOTEgNC4wNjQuMTUgOC41NjYgMy42MSAxMS4yNy0xLjEyIDMuOTE1LjE4IDguMjggMy4zMDQgMTEuMDUgMy4xMjYgMi43NyA3Ljc4MiAzLjM2IDEyLjAyIDEuNDUgMS42OSAzLjg4IDUuNTIgNi4zNTUgOS43ODIgNi4zMDYgNC41NjgtLjA1OCA4LjU3OC0yLjk4NCA5Ljk1LTcuMTkzIDMuOTg3LjUyMiA3Ljk3LTEuOTcgOS4yNi02LjAzNiAxLjI5LTQuMDY0LS4xNS04LjU2Ni0zLjYxLTExLjI3em0tNC43OTctLjM1MWMwIDEuNTQ1LS42IDEuNTQ1LS45IDIuMTVsLTMuODk4IDYuNzQ3Yy0uMTUuMjUtLjQuMzUtLjY1LjM1LS4xNSAwLS4zNS0uMDUtLjQ1LS4xNWwtMS0uNTljLS40LS4yLS42NS0uNjUtLjY1LTEuMSAwLS4xNSAwLS4zNS4wNS0uNDVsMS41NS01LjQ5N2MuMS0uMzUuMzUtLjYuNy0uOC4zNS0uMi43Mi0uMjUgMS4xNS0uMTVsMi4xNS42NWMuMzUuMS42NS4zNS44MDUuN2wuMDUuMXptLTMuMzk4LTE0Ljg0M2wtLjM1LjE1LS41NS0uM2MwLS4wNS0uNS0uNy0uOS0xLjU1LTEuOC0yLTMuOTk4LTIuODQ4LTYuNDk3LTIuNS00Ljg5OC42NS03Ljk0NiA0LjQ1LTcuNzk2IDguNjQ2bC4xNSAxLjE1LTEuMy0uNzVjLS4zNS0uMi0uNzUtLjItMS4xLS4xNS0uMzUuMS0uNjUuMzUtLjg1LjY1bC0yLjIgMy43OThjLS4yLjM1LS4yLjc1LS4wNSAxLjEuMTUuMzUuNDUuNTUuODUuNmU1LjQ5NiAxLjVjLjA1LS4wMS4xMDEtLjAyLjE1LjAyLjM1LjEuNi4zNS44Ljc1bDMuODk4IDYuNzQ3Yy4xNS4yNS4zNS40Ljc1LjQgMi4zNS4wNSA0Ljg0OC0uNSA2Ljk5Ny0xLjU5OCAyLjE1LTEuMSAzLjg0Ny0yLjg1IDQuNjk3LTQuOTU1LjU1IDEuMzUtLjggNS43NDcuOSA4LjY5N2wuMS4xNXptMjAuMjkyLTYuMTQ4bC0yLjM5OCA0LjE0OGMtLjIuMzUtLjU1LjU1LS45NS41NS0uNCAwLS43NS0uMi0xLS41NWwtMS45OTgtMy41Yy0uMS0uMi0uMTUtLjQtLjE1LS42IDAtLjQ1LjItLjguNTUtMS4wMmwtNS0zLjU5OGMtLjM1LS4yLS43NS0uMi0xLjEgMGwyLjEuNmMuNC4xLjY1LjQ1LjguOC4xLjQuMDUuOC0uMiAxLjF6Ii8+PC9zdmc+" class="official-logo avatar-logo">
          </div>` : ``;
       
       let contentHTML = "";
