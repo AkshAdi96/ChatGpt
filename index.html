@@ -15,8 +15,8 @@
       --text-color: #ececec;
       --text-dim: #b4b4b4;
       --accent: #10a37f;
-      --bubble-ai: #3E3F4B; 
-      --bubble-user: #10a37f;
+      --bubble-ai: #2f2f2f; 
+      --bubble-user: #2f2f2f; 
     }
     
     * { box-sizing: border-box; }
@@ -30,17 +30,33 @@
     .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; background: var(--bg-color); z-index: 100; }
     .hidden { display: none !important; }
 
-    /* LOGIN */
+    /* --- OFFICIAL LOGO STYLE --- */
+    /* This makes the SVG white and puts it on a green background */
+    .official-logo {
+      background-color: #10a37f;
+      filter: invert(1); /* Turns the black lines white */
+      border-radius: 50%;
+      padding: 4px; /* Space inside */
+    }
+
+    /* --- 1. LOGIN --- */
     #auth-screen { justify-content: center; align-items: center; text-align: center; background: #000; }
     .login-container { width: 320px; padding: 40px 0; }
-    .gpt-logo-big { font-size: 45px; margin-bottom: 25px; color: var(--text-color); }
+    
+    /* Login Logo Specifics */
+    .gpt-logo-big { 
+      width: 80px; height: 80px; 
+      margin-bottom: 25px; 
+      padding: 15px; /* Bigger padding for the big logo */
+    }
+    
     h2 { font-weight: 600; margin-bottom: 25px; font-size: 32px; }
     .input-group { margin-bottom: 15px; text-align: left; }
     .input-label { display: block; font-size: 14px; color: var(--text-dim); margin-bottom: 5px; }
     input.auth { width: 100%; padding: 15px; background: #fff; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; outline: none; color: #000; }
     button.auth { width: 100%; padding: 15px; background: var(--accent); color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
 
-    /* HEADER */
+    /* --- 2. HEADER --- */
     #header { 
       padding: 10px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); 
       background: var(--bg-color); display: flex; justify-content: space-between; 
@@ -54,19 +70,20 @@
       gap: 8px; cursor: default; padding: 8px 12px; border-radius: 8px; user-select: none;
     }
     
-    /* GREEN LOGO FILTER */
-    .header-logo { 
-      width: 24px; height: 24px; 
-      /* This precise filter turns black SVG into ChatGPT Green (#10a37f) */
-      filter: invert(53%) sepia(52%) saturate(478%) hue-rotate(103deg) brightness(91%) contrast(86%);
-    }
-    .model-name { font-size: 18px; font-weight: 700; color: #d1d5db; }
+    /* Header Logo Specifics */
+    .header-logo-small { width: 24px; height: 24px; padding: 3px; }
     
+    .model-name { font-size: 18px; font-weight: 700; color: #d1d5db; }
     .header-right { flex: 1; display: flex; justify-content: flex-end; }
     .new-chat-icon { color: var(--text-color); font-size: 18px; cursor: pointer; }
 
-    /* MESSAGES */
-    #messages { list-style: none; padding: 20px; margin: 0; flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; align-items: center; }
+    /* --- 3. MESSAGES --- */
+    #messages { 
+      list-style: none; padding: 20px; margin: 0; 
+      flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 15px;
+      align-items: center;
+    }
+    
     .msg-row { display: flex; width: 100%; max-width: 800px; }
     
     .row-user { justify-content: flex-start; }
@@ -75,10 +92,15 @@
 
     .row-ai { justify-content: flex-end; }
     .row-ai .msg-bubble { background: var(--bubble-ai); border-top-right-radius: 2px; }
-    .row-ai .avatar { margin-left: 10px; background: var(--accent); order: 2; } 
+    .row-ai .avatar { margin-left: 10px; flex-shrink: 0; order: 2; } 
 
-    .msg-bubble { max-width: 85%; padding: 12px 16px; border-radius: 18px; font-size: 16px; line-height: 1.5; position: relative; word-wrap: break-word; user-select: none; }
-    .avatar { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; color: white; }
+    /* AI Avatar Specifics (The small message logo) */
+    .avatar-logo { width: 30px; height: 30px; padding: 4px; }
+
+    .msg-bubble {
+      max-width: 85%; padding: 12px 16px; border-radius: 18px;
+      font-size: 16px; line-height: 1.5; position: relative; word-wrap: break-word; user-select: none;
+    }
 
     .msg-img { max-width: 100%; border-radius: 10px; margin-top: 5px; display: block; }
     .img-wrapper { position: relative; display: inline-block; cursor: zoom-in; }
@@ -89,7 +111,7 @@
     .doc-name { font-size: 14px; text-decoration: none; word-break: break-all; flex-grow: 1; }
     .dl-btn-doc { background: rgba(255,255,255,0.1); width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; margin-left: 5px; }
 
-    /* INPUT BAR */
+    /* --- 4. INPUT BAR --- */
     #form-container { padding: 15px; background: var(--bg-color); display: flex; justify-content: center; width: 100%; }
     .input-wrapper { width: 100%; max-width: 800px; background: var(--input-bg); border-radius: 26px; padding: 5px 10px; display: flex; align-items: center; gap: 8px; border: 1px solid #424242; transition: 0.2s; flex-wrap: nowrap; }
     .icon-btn { background: transparent; color: var(--text-dim); border: none; padding: 10px; font-size: 18px; cursor: pointer; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -99,7 +121,7 @@
     .send-btn:hover { background: #424242; }
     .send-btn.active { background: var(--accent); color: white; }
 
-    /* MENU & OVERLAYS */
+    /* --- MENU & OVERLAYS --- */
     #context-menu { position: fixed; background: #2f2f2f; border: 1px solid #444; border-radius: 8px; display: none; flex-direction: column; width: 120px; z-index: 2000; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
     .ctx-item { padding: 12px 15px; cursor: pointer; color: #ececf1; font-size: 14px; border-bottom: 1px solid #3e3e3e; display: flex; align-items: center; gap: 10px; }
     .ctx-item:hover { background: #3e3e3e; }
@@ -114,7 +136,8 @@
 
   <div id="auth-screen" class="screen">
     <div class="login-container">
-      <div class="gpt-logo-big"><i class="fas fa-robot"></i></div>
+      <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg" class="official-logo gpt-logo-big">
+      
       <h2>Welcome back</h2>
       <div class="input-group"><label class="input-label">Email address</label><input id="username" class="auth" type="text" /></div>
       <div class="input-group"><label class="input-label">Password</label><input id="secret-code" type="password" class="auth" /></div>
@@ -127,7 +150,7 @@
       <div class="header-left"><i class="fas fa-bars hamburger"></i></div>
       
       <div class="model-selector">
-        <img id="header-logo" src="https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg" class="header-logo">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg" class="official-logo header-logo-small">
         <span class="model-name">ChatGPT 4.0</span>
       </div>
 
@@ -224,7 +247,11 @@
       li.className = `msg-row ${isAI ? 'row-ai' : 'row-user'}`;
       li.id = msg._id;
       
-      const avatarHTML = isAI ? `<div class="avatar"><i class="fas fa-robot"></i></div>` : ``;
+      // OFFICIAL AVATAR LOGO FOR MESSAGES
+      const avatarHTML = isAI ? 
+        `<div class="avatar">
+           <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg" class="official-logo avatar-logo">
+         </div>` : ``;
       
       let contentHTML = "";
       if (msg.type === 'text') contentHTML = `<span class="bubble-text">${msg.text}</span>`;
