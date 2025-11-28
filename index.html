@@ -1,725 +1,357 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Our Space</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>New chat</title> <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
-    :root { --primary: #3797f0; --bg: #000; --msg-bg: #262626; --text: #fff; --accent: #b100cd; }
+    /* --- CHATGPT THEME --- */
+    :root { 
+      --bg-body: #343541; 
+      --bg-sidebar: #202123; 
+      --bg-user: #343541;
+      --bg-ai: #444654;
+      --text-primary: #ececf1;
+      --text-secondary: #8e8ea0;
+      --input-bg: #40414f;
+      --border: #565869;
+    }
     
     body { 
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-      margin: 0; background: var(--bg); color: var(--text); height: 100dvh; 
+      font-family: 'Segoe UI', Helvetica, Arial, sans-serif; 
+      margin: 0; background: var(--bg-body); color: var(--text-primary); height: 100dvh; 
       display: flex; flex-direction: column; overflow: hidden; 
     }
 
-    /* --- SCREEN MANAGEMENT --- */
-    /* This class handles showing/hiding different pages */
-    .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; background: #000; z-index: 100; transition: opacity 0.3s; }
+    /* SCREEN MANAGEMENT */
+    .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; background: var(--bg-body); z-index: 100; }
     .hidden { display: none !important; }
 
-    /* --- 1. NEW HOME SCREEN (The 2 Buttons) --- */
-    #home-screen { justify-content: center; align-items: center; gap: 25px; }
+    /* 1. AUTH SCREEN (Looks like OpenAI Login) */
+    #auth-screen { justify-content: center; align-items: center; text-align: center; }
+    .gpt-logo-big { font-size: 40px; margin-bottom: 20px; color: var(--text-primary); }
+    h2 { font-weight: 600; margin-bottom: 20px; color: var(--text-primary); }
     
-    .big-btn { 
-      padding: 25px 30px; 
-      border-radius: 20px; 
-      font-size: 20px; 
-      font-weight: bold; 
-      cursor: pointer; 
-      width: 85%; 
-      max-width: 320px;
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      gap: 15px;
-      transition: transform 0.1s;
-      
-      /* --- TRANSPARENT STYLE CHANGES --- */
-      background: transparent;         /* No color */
-      border: 2px solid white;         /* White border */
-      color: white;                    /* White text */
-      box-shadow: none;
+    input.auth { 
+      padding: 12px 15px; background: #fff; border: 1px solid #ccc; 
+      border-radius: 4px; width: 280px; font-size: 16px; outline: none; color: #000;
+      margin-bottom: 15px; display: block;
     }
     
-    .big-btn:active { 
-      transform: scale(0.96); 
-      background: rgba(255,255,255,0.2); /* Slight white glow when clicked */
+    button.auth { 
+      padding: 12px; width: 310px; background: #10a37f; color: white; 
+      border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 16px; 
     }
-    
+    button.auth:hover { background: #0e8e6d; }
 
-    /* --- 2. AUTH SCREEN (Shared for both) --- */
-    #auth-screen { justify-content: center; align-items: center; gap: 20px; }
-    input.auth { padding: 15px; background: #222; border: 1px solid #333; color: white; border-radius: 8px; width: 250px; font-size: 16px; outline: none; }
-    button.auth { padding: 15px 40px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
-    
-    .back-btn { position: absolute; top: 20px; left: 20px; background: none; border: none; color: #888; font-size: 24px; cursor: pointer; padding: 10px; }
-
-    /* --- 3. INSTANT OPTIONS GRID --- */
-    #instant-screen { background: #000; }
-    #instant-header { padding: 20px; text-align: center; color: #888; font-size: 14px; border-bottom: 1px solid #222; margin-top: 40px;}
-    
-    #instant-options { 
-      padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; 
-      align-content: start; overflow-y: auto; 
+    /* 2. CHAT HEADER (Mobile Header) */
+    #header { 
+      padding: 10px 15px; border-bottom: 1px solid rgba(255,255,255,0.1); 
+      background: var(--bg-body); display: flex; justify-content: space-between; 
+      align-items: center; height: 45px; flex-shrink: 0;
     }
-    .quick-opt { 
-      background: #1a1a1a; border: 1px solid #333; color: white; 
-      padding: 25px 15px; border-radius: 15px; font-size: 16px; cursor: pointer;
-      display: flex; flex-direction: column; align-items: center; gap: 12px;
-      transition: 0.2s;
-    }
-    .quick-opt i { font-size: 28px; color: var(--accent); }
-    .quick-opt:active { background: var(--accent); border-color: var(--accent); transform: scale(0.95); }
-    .quick-opt:active i { color: white; }
+    .hamburger { color: var(--text-primary); font-size: 20px; cursor: pointer; }
+    .model-name { font-size: 14px; font-weight: 600; opacity: 0.9; }
+    .plus-icon { color: var(--text-primary); font-size: 20px; cursor: pointer; }
 
-    /* --- 4. CHAT SCREEN (Your Existing Styles) --- */
-    #chat-screen { position: relative; }
-    
-    /* HEADER */
-    #header { padding: 15px; border-bottom: 1px solid #333; background: #111; display: flex; justify-content: space-between; align-items: center; font-weight: bold; height: 60px; box-sizing: border-box; flex-shrink: 0; }
-    .status-dot { height: 10px; width: 10px; background-color: #555; border-radius: 50%; display: inline-block; margin-right: 5px; }
-    .online { background-color: #00d647; box-shadow: 0 0 5px #00d647; }
-    #status-text { font-size: 12px; color: #00d647; font-weight: normal; }
-
-    /* MESSAGES */
+    /* 3. MESSAGES (The GPT Row Style) */
     #messages { 
-      list-style: none; padding: 20px; padding-bottom: 90px; margin: 0; 
-      flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; 
-      -webkit-overflow-scrolling: touch; 
+      list-style: none; padding: 0; margin: 0; 
+      flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; 
     }
-    .msg-container { max-width: 75%; padding: 10px 15px; border-radius: 20px; position: relative; font-size: 15px; line-height: 1.4; word-wrap: break-word; user-select: none; }
-    .my-msg { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 5px; }
-    .other-msg { align-self: flex-start; background: var(--msg-bg); color: white; border-bottom-left-radius: 5px; }
-    .username-label { font-size: 10px; opacity: 0.7; margin-bottom: 4px; display: block; }
-    .edited-label { font-size: 10px; opacity: 0.6; font-style: italic; margin-left: 5px; }
     
-    .msg-img { max-width: 100%; border-radius: 10px; display: block; margin-top: 5px; }
-    audio { height: 40px; width: 200px; filter: invert(1); margin-top: 5px; } 
-
-    /* TYPING INDICATOR */
-    #typing-indicator { position: fixed; bottom: 70px; left: 20px; height: 20px; font-size: 16px; color: var(--accent); font-style: italic; font-weight: bold; z-index: 15; pointer-events: none;}
+    .msg-row { 
+      padding: 20px 15px; border-bottom: 1px solid rgba(0,0,0,0.1); 
+      display: flex; gap: 15px; font-size: 15px; line-height: 1.6;
+    }
     
-    /* REACTIONS */
-    .reaction-bar { position: absolute; bottom: -12px; right: 0; background: #222; border-radius: 12px; padding: 2px 6px; font-size: 12px; border: 1px solid #000; display: none; box-shadow: 0 2px 4px rgba(0,0,0,0.5); z-index: 10; }
+    /* USER STYLES */
+    .row-user { background: var(--bg-user); }
+    .avatar-user { 
+      width: 30px; height: 30px; border-radius: 2px; background: #5436da; 
+      display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0;
+    }
+    
+    /* AI (YOU) STYLES */
+    .row-ai { background: var(--bg-ai); }
+    .avatar-ai { 
+      width: 30px; height: 30px; border-radius: 2px; background: #10a37f; 
+      display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
+    }
 
-    /* INPUT BAR */
+    .msg-content { flex-grow: 1; word-wrap: break-word; white-space: pre-wrap; }
+    
+    /* Images in chat */
+    .msg-img { max-width: 100%; border-radius: 5px; margin-top: 10px; }
+    .doc-link { color: #10a37f; text-decoration: underline; cursor: pointer; display: block; margin-top: 5px;}
+
+    /* 4. INPUT AREA */
     #form-container { 
-      position: fixed; bottom: 0; left: 0; width: 100%; padding: 10px; 
-      background: #000; display: flex; align-items: center; gap: 8px; 
-      border-top: 1px solid #333; box-sizing: border-box; z-index: 20;
-      padding-bottom: max(10px, env(safe-area-inset-bottom)); 
+      padding: 20px; background: var(--bg-body); 
+      background-image: linear-gradient(180deg,rgba(53,55,64,0),#353740 58.85%);
+      position: relative;
     }
-    #input { flex-grow: 1; padding: 12px; border-radius: 25px; border: 1px solid #333; background: #121212; color: white; outline: none; font-size: 16px; }
-    .icon-btn { background: none; border: none; color: white; font-size: 20px; cursor: pointer; padding: 8px; transition: 0.2s; }
-    .recording-anim { color: #ff3b30; animation: pulse 1s infinite; }
-    @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.1); } 100% { opacity: 1; transform: scale(1); } }
+    
+    .input-box {
+      background: var(--input-bg); border: 1px solid rgba(0,0,0,0.3);
+      border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      display: flex; align-items: center; padding: 10px; gap: 10px;
+    }
+    
+    #input { 
+      flex-grow: 1; background: transparent; border: none; color: white; 
+      font-size: 16px; outline: none; max-height: 200px; resize: none; font-family: inherit;
+    }
+    
+    .send-btn { 
+      color: #8e8ea0; background: none; border: none; font-size: 16px; cursor: pointer; 
+      transition: 0.2s; padding: 5px; border-radius: 4px;
+    }
+    .send-btn:hover { background: rgba(0,0,0,0.5); color: #ececf1; }
+    .send-btn.active { background: #19c37d; color: white; }
 
-    /* CONTEXT MENU */
-    #context-menu { position: fixed; background: #1a1a1a; border: 1px solid #333; border-radius: 12px; display: none; flex-direction: column; width: 220px; z-index: 2000; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-    .ctx-item { padding: 15px; cursor: pointer; border-bottom: 1px solid #333; display: flex; align-items: center; gap: 15px; font-size: 14px; }
-    .ctx-item:active { background: #333; }
-    .ctx-danger { color: #ff4d4d; }
-    .emoji-row { display: flex; justify-content: space-between; padding: 10px 15px; background: #222; border-bottom: 1px solid #333; }
-    .emoji-opt { font-size: 24px; cursor: pointer; transition: transform 0.1s; }
-    .emoji-opt:active { transform: scale(1.4); }
+    .file-btn { color: #8e8ea0; cursor: pointer; font-size: 16px; }
+    .file-btn:hover { color: #ececf1; }
+
+    /* Typing Cursor */
+    .typing-cursor::after { content: "▋"; animation: blink 1s infinite; margin-left: 2px; }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+    /* Disguised Context Menu */
+    #context-menu { position: fixed; background: #202123; border: 1px solid #444; border-radius: 5px; display: none; flex-direction: column; width: 120px; z-index: 2000; }
+    .ctx-item { padding: 10px; cursor: pointer; color: #ececf1; font-size: 13px; border-bottom: 1px solid #333; }
+    .ctx-item:hover { background: #40414f; }
     #menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; z-index: 1999; }
-    
-    /* --- UPDATED VIDEO STYLES (Paste inside <style>) --- */
-    
-    #video-container { 
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-      background: #000; z-index: 5000; display: none; flex-direction: column;
-    }
-    
-    /* 1. REMOTE VIDEO (Hers) */
-    /* object-fit: contain -> Ensures the whole video is seen, no cropping */
-    #remote-video { 
-      width: 100%; 
-      height: 100%; 
-      object-fit: contain; 
-      background: #000; 
-    }
-    
-    /* 2. LOCAL VIDEO (Yours) */
-    /* Kept 'cover' so your small box looks neat, but added the Flip */
-    #local-video { 
-      position: absolute; bottom: 100px; right: 20px; 
-      width: 100px; height: 150px; background: #222; 
-      border: 2px solid #333; border-radius: 10px; 
-      object-fit: cover; 
-      z-index: 5001;
-      transform: scaleX(-1); /* Flips your camera mirror-style */
-    }
 
   </style>
 </head>
 <body>
 
-  <div id="home-screen" class="screen">
-    <h1 style="font-size: 32px; margin-bottom: 20px;">Chat Room</h1>
-    
-    <button class="big-btn btn-login" onclick="setupAuth('login')">
-      <i class="fas fa-comments"></i> Enter Chat
-    </button>
-    
-    <button class="big-btn btn-instant" onclick="setupAuth('instant')">
-      <i class="fas fa-bolt"></i> Instant Msg
-    </button>
-  </div>
-
-  <div id="auth-screen" class="screen hidden">
-    <button class="back-btn" onclick="goHome()"><i class="fas fa-arrow-left"></i></button>
-    
-    <h2 id="auth-title" style="margin-bottom: 20px;">Login</h2>
-    
-    <input id="username" class="auth" placeholder="Your Name" />
-    
-    <input id="secret-code" type="password" class="auth" placeholder="Secret Code" />
-    
-    <button class="auth" onclick="processAuth()">Go</button>
-  </div>
-
-  <div id="instant-screen" class="screen hidden">
-    <button class="back-btn" onclick="goHome()"><i class="fas fa-times"></i></button>
-    <div id="instant-header">Tap to send immediately as "Instant Msg"</div>
-    
-    <div id="instant-options">
-      <div class="quick-opt" onclick="sendInstant('I am Busy in Arranging Programs🚫')"><i class="fas fa-music"></i> Busy in Programs</div>
-      <div class="quick-opt" onclick="sendInstant('I am Busy in Some Other Work🚫')"><i class="far fa-frown"></i> Busy in Other Work</div>
-      <div class="quick-opt" onclick="sendInstant('Studying Today 📚')"><i class="fas fa-book"></i> Studying Today</div>
-      <div class="quick-opt" onclick="sendInstant('Not Feeling Good Today')"><i class="fas fa-first-aid"></i> Not Feeling Good Today</div>
-      <div class="quick-opt" onclick="sendInstant('I Will Call You Today📞')"><i class="fas fa-phone"></i> I Will Call Today</div>
-      <div class="quick-opt" onclick="sendInstant('I Will Call You Tommorrow📞')"><i class="fas fa-phone"></i> I Will Call Tommorrow</div>
+  <div id="auth-screen" class="screen">
+    <div style="margin-bottom: 30px;">
+      <i class="fas fa-robot gpt-logo-big"></i>
+      <h2>Welcome back</h2>
     </div>
+    
+    <input id="username" class="auth" placeholder="Email address" /> 
+    <input id="secret-code" type="password" class="auth" placeholder="Password" />
+    <button class="auth" onclick="login()">Continue</button>
+    <p style="margin-top: 15px; font-size: 12px; color: var(--text-secondary);">Don't have an account? <span style="color:#10a37f">Sign up</span></p>
   </div>
 
   <div id="chat-screen" class="screen hidden">
     <div id="header">
-      <div style="display:flex; align-items:center;">
-        <button id="video-btn" onclick="startCall()" style="background:none; border:none; color:white; font-size:18px; cursor:pointer; margin-left:10px;">
-           <i class="fas fa-video"></i>
-        </button>
-        <span id="online-dot" class="status-dot"></span>
-        <span id="chat-title">Us</span>
-      </div>
-      <span id="status-text">Waiting...</span>
+      <i class="fas fa-bars hamburger"></i>
+      <span class="model-name">ChatGPT 4.0 <span id="online-indicator" style="color:#10a37f; font-size:10px; display:none;">●</span></span>
+      <i class="fas fa-plus plus-icon" onclick="panic()"></i>
     </div>
     
     <ul id="messages"></ul>
-    <div id="typing-indicator"></div>
     
     <div id="form-container">
-      <label for="img-upload" class="icon-btn"><i class="fas fa-image"></i></label>
-      <input type="file" id="img-upload" accept="image/*" style="display:none" onchange="sendImage()" />
+      <div class="input-box">
+        <input type="file" id="img-upload" accept="image/*" style="display:none" onchange="sendImage()" />
+        <input type="file" id="doc-upload" accept=".pdf,.doc,.docx,.txt" style="display:none" onchange="sendDoc()" />
+        
+        <label class="file-btn" onclick="toggleTools()"><i class="fas fa-plus-circle"></i></label>
+        
+        <input id="input" autocomplete="off" placeholder="Message ChatGPT..." />
+        
+        <button id="send-btn" class="send-btn"><i class="fas fa-paper-plane"></i></button>
+      </div>
+      <div style="font-size: 11px; color: #8e8ea0; text-align: center; margin-top: 10px;">
+        ChatGPT can make mistakes. Consider checking important information.
+      </div>
+    </div>
+  </div>
 
-      <label for="doc-upload" class="icon-btn"><i class="fas fa-paperclip"></i></label>
-      <input type="file" id="doc-upload" accept=".pdf,.doc,.docx,.txt,.zip" style="display:none" onchange="sendDoc()" />
-      
-      <input id="input" autocomplete="off" placeholder="Message..." />
-      
-      <button id="mic-btn" class="icon-btn"><i class="fas fa-microphone"></i></button>
-      <button id="send-btn" class="icon-btn" style="color: var(--primary);"><i class="fas fa-paper-plane"></i></button>
+  <div id="tool-menu" style="display:none; position:absolute; bottom:80px; left:20px; background:#202123; padding:10px; border-radius:5px; border:1px solid #444; z-index:20;">
+    <div style="display:flex; gap:15px;">
+      <label for="img-upload" style="cursor:pointer; color:#ececf1;"><i class="far fa-image"></i> Image</label>
+      <label for="doc-upload" style="cursor:pointer; color:#ececf1;"><i class="fas fa-paperclip"></i> File</label>
     </div>
   </div>
 
   <div id="menu-overlay" onclick="closeMenu()"></div>
   <div id="context-menu">
-    <div class="emoji-row">
-      <span class="emoji-opt" onclick="react('❤️')">❤️</span>
-      <span class="emoji-opt" onclick="react('😂')">😂</span>
-      <span class="emoji-opt" onclick="react('😮')">😮</span>
-      <span class="emoji-opt" onclick="react('😢')">😢</span>
-      <span class="emoji-opt" onclick="react('👍')">👍</span>
-    </div>
-    <div class="ctx-item" id="btn-edit" onclick="startEdit()"><i class="fas fa-pen"></i> Edit Message</div>
-    <div class="ctx-item ctx-danger" id="btn-unsend" onclick="unsend()"><i class="fas fa-trash"></i> Unsend</div>
+    <div class="ctx-item" onclick="unsend()">Delete</div>
+    <div class="ctx-item" onclick="startEdit()">Edit</div>
   </div>
 
-   
-  
-  <div id="video-container" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:5000; flex-direction:column;">
-    
-    <video id="remote-video" autoplay playsinline style="width:100%; height:100%; object-fit:contain;background:#000;"></video>
-    
-    <video id="local-video" autoplay playsinline muted style="position:absolute; bottom:100px; right:20px; width:100px; height:150px; background:#222; border:2px solid #333; border-radius:10px; object-fit:cover; z-index:5001; transform: scaleX(-1);"></video>
-    
-    <div id="call-controls" style="position:absolute; bottom:30px; left:0; width:100%; display:flex; justify-content:center; gap:20px; z-index:5002;">
-      
-      <button id="btn-mute" onclick="toggleMute()" style="width:50px; height:50px; border-radius:50%; border:none; background:#444; color:white; font-size:20px; cursor:pointer;">
-        <i class="fas fa-microphone" id="icon-mute"></i>
-      </button>
-      
-      <button id="btn-cam" onclick="toggleCam()" style="width:50px; height:50px; border-radius:50%; border:none; background:#444; color:white; font-size:20px; cursor:pointer;">
-        <i class="fas fa-video" id="icon-cam"></i>
-      </button>
-
-      <button onclick="endCall()" style="width:50px; height:50px; border-radius:50%; border:none; background:#ff4d4d; color:white; font-size:20px; cursor:pointer;">
-        <i class="fas fa-phone-slash"></i>
-      </button>
-      
-    </div>
-  </div>
-  
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
-    let myName = localStorage.getItem('chat_username') || "";
-    let authMode = 'login'; // 'login' or 'instant'
+    let myName = ""; 
+    let selectedMsgId = null; 
+    let selectedMsgIsMine = false;
 
-    // --- NEW NAVIGATION LOGIC ---
-    
-    // 1. Go back to start
-    function goHome() {
-      document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
-      document.getElementById('home-screen').classList.remove('hidden');
-    }
-
-    // 2. Setup the Auth Screen based on which button was clicked
-    function setupAuth(mode) {
-      authMode = mode;
-      document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
-      document.getElementById('auth-screen').classList.remove('hidden');
-      
-      const title = document.getElementById('auth-title');
-      const nameInput = document.getElementById('username');
-      
-      if(mode === 'instant') {
-        title.innerText = "Instant Short Msg ⚡";
-        nameInput.style.display = 'none'; // HIDE NAME INPUT
-      } else {
-        title.innerText = "Login 🔒";
-        nameInput.style.display = 'block'; // SHOW NAME INPUT
-        if(myName && myName !== "Instant Msg") nameInput.value = myName;
-      }
-    }
-
-    // 3. Process the Code/Name
-    function processAuth() {
+    // --- LOGIN LOGIC ---
+    function login() {
       const code = document.getElementById('secret-code').value;
+      const nameInput = document.getElementById('username').value.trim();
       
-      if(authMode === 'login') {
-        const name = document.getElementById('username').value.trim();
-        if(!name || !code) return alert("Please enter name and code");
-        myName = name;
-        localStorage.setItem('chat_username', myName);
-        socket.emit('join', { code, username: myName });
+      // LOGIC: If YOU login, type "admin" or your name -> You become ChatGPT
+      // If SHE logins (or types anything else) -> She becomes User
+      
+      // REPLACE 'admin' WITH THE NAME YOU WILL TYPE TO BE THE AI
+      if(nameInput.toLowerCase() === 'admin') {
+        myName = "ChatGPT";
       } else {
-        // INSTANT MODE
-        if(!code) return alert("Please enter code");
-        // We set the name automatically
-        myName = "Instant Msg";
-        socket.emit('join', { code, username: myName });
+        myName = "User"; // She is always "User"
       }
+
+      if(code) socket.emit('join', { code, username: myName });
     }
 
-    // 4. Handle Successful Auth
     socket.on('auth-success', () => {
       document.getElementById('auth-screen').classList.add('hidden');
-      
-      if(authMode === 'login') {
-        // Go to Chat
-        document.getElementById('chat-screen').classList.remove('hidden');
-        scrollToBottom();
-      } else {
-        // Go to Instant Options
-        document.getElementById('instant-screen').classList.remove('hidden');
-      }
+      document.getElementById('chat-screen').classList.remove('hidden');
+      scrollToBottom();
     });
 
-    // 5. Send Instant Message
-    function sendInstant(text) {
-      socket.emit('chat message', { text: text, type: 'text' });
-      alert(`Sent: "${text}"`);
-      // Reload page to logout/reset after sending
-      location.reload(); 
-    }
+    socket.on('auth-fail', () => alert("Wrong email or password."));
 
-    // --- EXISTING LOGIC BELOW ---
-    
-    socket.on('auth-fail', () => alert("Incorrect Code!"));
+    // --- PANIC BUTTON ---
+    function panic() { window.location.href = "https://www.google.com"; }
 
-    socket.on('update-online-users', (users) => {
-      const statusText = document.getElementById('status-text');
-      const dot = document.getElementById('online-dot');
-      const others = users.filter(u => u !== myName);
-      
-      if (others.length > 0) {
-        statusText.innerText = `${others.join(', ')} is online`;
-        dot.classList.add('online');
-      } else {
-        statusText.innerText = "Only you";
-        dot.classList.remove('online');
-      }
-    });
-
+    // --- CHAT LOGIC ---
     const messages = document.getElementById('messages');
     const input = document.getElementById('input');
+    const sendBtn = document.getElementById('send-btn');
 
-    input.addEventListener("keypress", function(event) {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        document.getElementById("send-btn").click();
-      }
-    });
-
-    document.getElementById('send-btn').onclick = () => {
-      if (input.value.trim()) {
-        socket.emit('chat message', { text: input.value, type: 'text' });
-        input.value = '';
-        socket.emit('stop-typing');
-        input.focus();
-      }
-    };
-
+    // Make send button green when typing
     input.addEventListener('input', () => {
+      if(input.value.trim().length > 0) sendBtn.classList.add('active');
+      else sendBtn.classList.remove('active');
+      
       socket.emit('typing');
       clearTimeout(typingTimer);
       typingTimer = setTimeout(() => socket.emit('stop-typing'), 1000);
     });
 
-    socket.on('display-typing', (user) => {
-      document.getElementById('typing-indicator').innerText = `${user} is typing...`;
-    });
-    socket.on('hide-typing', () => {
-      document.getElementById('typing-indicator').innerText = '';
+    input.addEventListener("keypress", function(event) {
+      if (event.key === "Enter") { event.preventDefault(); sendBtn.click(); }
     });
 
-    socket.on('chat message', (msg) => {
-      addMessageToUI(msg);
-      scrollToBottom();
-    });
+    sendBtn.onclick = () => {
+      if (input.value.trim()) {
+        socket.emit('chat message', { text: input.value, type: 'text' });
+        input.value = '';
+        sendBtn.classList.remove('active');
+      }
+    };
 
-    socket.on('load-history', (history) => {
-      messages.innerHTML = '';
-      history.forEach(addMessageToUI);
-      scrollToBottom();
-    });
+    socket.on('chat message', (msg) => { addMessageToUI(msg); scrollToBottom(); });
+    socket.on('load-history', (history) => { messages.innerHTML = ''; history.forEach(addMessageToUI); scrollToBottom(); });
 
-    function scrollToBottom() {
-      setTimeout(() => {
-        messages.scrollTop = messages.scrollHeight;
-      }, 50);
-    }
+    function scrollToBottom() { setTimeout(() => { messages.scrollTop = messages.scrollHeight; }, 50); }
 
     function addMessageToUI(msg) {
-      const li = document.createElement('li');
-      li.className = `msg-container ${msg.username === myName ? 'my-msg' : 'other-msg'}`;
-      li.id = msg._id;
+      const div = document.createElement('div');
       
-      li.oncontextmenu = (e) => showMenu(e, msg._id, msg.username === myName);
-      let pressTimer;
-      li.ontouchstart = (e) => { pressTimer = setTimeout(() => showMenu(e, msg._id, msg.username === myName), 500); };
-      li.ontouchend = () => clearTimeout(pressTimer);
+      // DETERMINE STYLE BASED ON SENDER NAME
+      // If the sender is "ChatGPT", use AI style. Otherwise, User style.
+      const isAI = (msg.username === "ChatGPT");
+      
+      div.className = `msg-row ${isAI ? 'row-ai' : 'row-user'}`;
+      div.id = msg._id;
+      
+      // Avatar
+      const avatarHTML = isAI 
+        ? `<div class="avatar-ai"><i class="fas fa-robot"></i></div>` // AI Icon
+        : `<div class="avatar-user">U</div>`; // User Icon
 
+      // Content
       let content = "";
-      if(msg.username !== myName) content += `<span class="username-label">${msg.username}</span>`;
-      
-      if (msg.type === 'text') {
-        content += `<span class="msg-text">${msg.text}</span>`;
-      } else if (msg.type === 'image') {
-        const downloadName = `photo_${Date.now()}.png`;
-        content += `<div style="position: relative; display: inline-block;">
-                      <img src="${msg.text}" class="msg-img" />
-                      <a href="${msg.text}" download="${downloadName}" style="position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.6); color: white; padding: 6px 10px; border-radius: 20px; text-decoration: none; font-size: 12px; backdrop-filter: blur(2px);">
-                        <i class="fas fa-download"></i> Save
-                      </a>
-                    </div>`;
-      } else if (msg.type === 'audio') {
-        content += `<audio controls src="${msg.text}"></audio>`;
-      } 
-      else if (msg.type === 'document') {
-        content += `<a href="${msg.text}" download="${msg.fileName}" style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 10px; text-decoration: none; color: white; margin-top: 5px;">
-                      <i class="fas fa-file-alt" style="font-size: 20px;"></i>
-                      <span style="font-size: 14px; text-decoration: underline;">${msg.fileName}</span>
-                      <i class="fas fa-download" style="font-size: 12px; margin-left: 5px;"></i>
-                    </a>`;
-      }
+      if (msg.type === 'text') content = msg.text;
+      else if (msg.type === 'image') content = `<img src="${msg.text}" class="msg-img" />`;
+      else if (msg.type === 'document') content = `<a class="doc-link" href="${msg.text}" download="${msg.fileName}"><i class="fas fa-file"></i> ${msg.fileName}</a>`;
 
-      if(msg.isEdited) content += `<span class="edited-label">(edited)</span>`;
+      div.innerHTML = `
+        ${avatarHTML}
+        <div class="msg-content">${content}</div>
+      `;
 
-      li.innerHTML = content;
-      
-      const reactionDiv = document.createElement('div');
-      reactionDiv.className = 'reaction-bar';
-      reactionDiv.id = `react-${msg._id}`;
-      li.appendChild(reactionDiv);
-      updateReactionsUI(msg._id, msg.reactions);
+      // Right click menu
+      div.oncontextmenu = (e) => showMenu(e, msg._id, msg.username === myName);
+      let pressTimer;
+      div.ontouchstart = (e) => { pressTimer = setTimeout(() => showMenu(e, msg._id, msg.username === myName), 500); };
+      div.ontouchend = () => clearTimeout(pressTimer);
 
-      messages.appendChild(li);
+      messages.appendChild(div);
     }
 
+    // --- TYPING INDICATOR (Fake Cursor) ---
+    let typingTimer;
+    socket.on('display-typing', (user) => {
+      // Only show typing if it's the OTHER person
+      if(user !== myName) {
+        // We create a temporary fake message bubble
+        const tempId = "temp-typing";
+        if(!document.getElementById(tempId)) {
+           const div = document.createElement('div');
+           div.id = tempId;
+           div.className = `msg-row ${user === "ChatGPT" ? 'row-ai' : 'row-user'}`;
+           div.innerHTML = `
+             <div class="${user === "ChatGPT" ? 'avatar-ai' : 'avatar-user'}">${user === "ChatGPT" ? '<i class="fas fa-robot"></i>' : 'U'}</div>
+             <div class="msg-content typing-cursor"></div>
+           `;
+           messages.appendChild(div);
+           scrollToBottom();
+        }
+      }
+    });
+    
+    socket.on('hide-typing', () => {
+      const el = document.getElementById("temp-typing");
+      if(el) el.remove();
+    });
+
+    // --- TOOLS & UPLOADS ---
+    function toggleTools() {
+      const menu = document.getElementById('tool-menu');
+      menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+    }
+    
     function sendImage() {
+      toggleTools();
       const file = document.getElementById('img-upload').files[0];
       if (!file) return;
       const reader = new FileReader();
       reader.onload = (e) => socket.emit('chat message', { text: e.target.result, type: 'image' });
       reader.readAsDataURL(file);
     }
+    
     function sendDoc() {
+      toggleTools();
       const file = document.getElementById('doc-upload').files[0];
       if (!file) return;
-      if(file.size > 10 * 1024 * 1024) return alert("File too big! Max 10MB.");
+      if(file.size > 10 * 1024 * 1024) return alert("File too large");
       const reader = new FileReader();
-      reader.onload = (e) => {
-        socket.emit('chat message', { text: e.target.result, type: 'document', fileName: file.name });
-      };
+      reader.onload = (e) => socket.emit('chat message', { text: e.target.result, type: 'document', fileName: file.name });
       reader.readAsDataURL(file);
     }
-    
-    let mediaRecorder;
-    let audioChunks = [];
-    const micBtn = document.getElementById('mic-btn');
-    let isRecording = false;
 
-    micBtn.onclick = async () => {
-      if (!isRecording) {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          mediaRecorder = new MediaRecorder(stream);
-          mediaRecorder.start();
-          isRecording = true;
-          micBtn.classList.add('recording-anim');
-          audioChunks = [];
-          mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-          mediaRecorder.onstop = () => {
-             const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-             const reader = new FileReader();
-             reader.readAsDataURL(audioBlob);
-             reader.onloadend = () => {
-               socket.emit('chat message', { text: reader.result, type: 'audio' });
-             };
-          };
-        } catch(err) {
-          alert("Microphone access denied! Check settings.");
-        }
-      } else {
-        mediaRecorder.stop();
-        isRecording = false;
-        micBtn.classList.remove('recording-anim');
-      }
-    };
-
-    socket.on('message-unsent', (id) => {
-      const el = document.getElementById(id);
-      if(el) el.remove();
-    });
-
-    socket.on('message-edited', ({ messageId, newText }) => {
-      const el = document.getElementById(messageId);
-      if(el) {
-        const textSpan = el.querySelector('.msg-text');
-        if(textSpan) textSpan.innerText = newText;
-        if(!el.querySelector('.edited-label')) el.innerHTML += `<span class="edited-label">(edited)</span>`;
-      }
-    });
-
-    socket.on('update-reaction', ({ messageId, reactions }) => updateReactionsUI(messageId, reactions));
-
-    function updateReactionsUI(msgId, reactions) {
-      const el = document.getElementById(`react-${msgId}`);
-      if (!el) return;
-      const vals = reactions instanceof Map ? Array.from(reactions.values()) : Object.values(reactions);
-      if (vals.length > 0) {
-        el.style.display = 'block';
-        el.innerText = vals.join('');
-      } else {
-        el.style.display = 'none';
-      }
-    }
-
+    // --- MENU ---
     const menu = document.getElementById('context-menu');
     const overlay = document.getElementById('menu-overlay');
-
     function showMenu(e, msgId, isMine) {
-      e.preventDefault();
-      selectedMsgId = msgId;
-      selectedMsgIsMine = isMine;
-      
-      document.getElementById('btn-edit').style.display = isMine ? 'flex' : 'none';
-      document.getElementById('btn-unsend').style.display = isMine ? 'flex' : 'none';
-
-      let x = e.clientX || e.touches[0].clientX;
-      let y = e.clientY || e.touches[0].clientY;
-      if (x + 220 > window.innerWidth) x = window.innerWidth - 230;
-
-      menu.style.left = x + 'px';
-      menu.style.top = y + 'px';
-      menu.style.display = 'flex';
-      overlay.style.display = 'block';
+      if(!isMine) return; // Can only edit your own
+      e.preventDefault(); selectedMsgId = msgId;
+      let x = e.clientX; let y = e.clientY;
+      menu.style.left = x + 'px'; menu.style.top = y + 'px'; menu.style.display = 'flex'; overlay.style.display = 'block';
     }
-
-    function closeMenu() {
-      menu.style.display = 'none';
-      overlay.style.display = 'none';
-    }
-
-    function react(emoji) {
-      if(selectedMsgId) socket.emit('react', { messageId: selectedMsgId, reaction: emoji });
-      closeMenu();
-    }
-    function unsend() {
-      if(selectedMsgId && selectedMsgIsMine) socket.emit('unsend-message', selectedMsgId);
-      closeMenu();
-    }
-    function startEdit() {
-      if(selectedMsgId && selectedMsgIsMine) {
-        const newText = prompt("Edit message:");
-        if(newText) socket.emit('edit-message', { messageId: selectedMsgId, newText });
-      }
-      closeMenu();
-    }
-
-   // --- FINAL FIXED VIDEO LOGIC (With Connection Queue) ---
-    let localStream;
-    let peerConnection;
-    let activeCallSocket = null;
-    let iceCandidatesQueue = []; // <--- The Waiting Room for connection details
+    function closeMenu() { menu.style.display = 'none'; overlay.style.display = 'none'; }
+    function unsend() { if(selectedMsgId) socket.emit('unsend-message', selectedMsgId); closeMenu(); }
+    function startEdit() { if(selectedMsgId) { const newText = prompt("Edit:"); if(newText) socket.emit('edit-message', { messageId: selectedMsgId, newText }); } closeMenu(); }
     
-    const rtcConfig = {
-      iceServers: [{ urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] }]
-    };
-
-    async function startCall() {
-      try {
-        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        document.getElementById("local-video").srcObject = localStream;
-        document.getElementById("video-container").style.display = "flex";
-        
-        peerConnection = new RTCPeerConnection(rtcConfig);
-        localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-        
-        peerConnection.onicecandidate = event => {
-          if (event.candidate) socket.emit("ice-candidate", { to: activeCallSocket, candidate: event.candidate });
-        };
-        
-        peerConnection.ontrack = event => {
-          document.getElementById("remote-video").srcObject = event.streams[0];
-        };
-
-        const offer = await peerConnection.createOffer();
-        await peerConnection.setLocalDescription(offer);
-        socket.emit("call-user", { offer });
-        
-      } catch(err) { 
-        alert("Camera error. Make sure permissions are allowed."); 
-      }
-    }
-
-    socket.on("call-made", async data => {
-      // 1. Alert user
-      if(!confirm("Incoming Video Call. Accept?")) return;
-      
-      activeCallSocket = data.socket;
-      localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      document.getElementById("local-video").srcObject = localStream;
-      document.getElementById("video-container").style.display = "flex";
-
-      peerConnection = new RTCPeerConnection(rtcConfig);
-      localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-      
-      peerConnection.onicecandidate = event => {
-        if (event.candidate) socket.emit("ice-candidate", { to: data.socket, candidate: event.candidate });
-      };
-
-      peerConnection.ontrack = event => {
-        document.getElementById("remote-video").srcObject = event.streams[0];
-      };
-
-      // 2. Set Remote Description
-      await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
-      
-      // 3. PROCESS THE WAITING QUEUE (The Fix!)
-      // Apply any connection details that arrived while we were waiting
-      while (iceCandidatesQueue.length > 0) {
-        const candidate = iceCandidatesQueue.shift();
-        await peerConnection.addIceCandidate(candidate);
-      }
-
-      const answer = await peerConnection.createAnswer();
-      await peerConnection.setLocalDescription(answer);
-
-      socket.emit("make-answer", { answer, to: data.socket });
+    // Listen for edits/deletes to update UI instantly
+    socket.on('message-unsent', (id) => { const el = document.getElementById(id); if(el) el.remove(); });
+    socket.on('message-edited', ({ messageId, newText }) => {
+      const el = document.getElementById(messageId);
+      if(el) el.querySelector('.msg-content').innerText = newText;
     });
 
-    socket.on("answer-made", async data => {
-      activeCallSocket = data.socket;
-      await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
-      
-      // Also process queue here just in case
-      while (iceCandidatesQueue.length > 0) {
-        const candidate = iceCandidatesQueue.shift();
-        await peerConnection.addIceCandidate(candidate);
-      }
-    });
-
-    // 4. SMART CANDIDATE HANDLING
-    socket.on("ice-candidate", async data => {
-      const candidate = new RTCIceCandidate(data.candidate);
-      
-      // If connection is ready, add immediately
-      if(peerConnection && peerConnection.remoteDescription) {
-        await peerConnection.addIceCandidate(candidate);
-      } else {
-        // If not ready, save to the Waiting Room (Queue)
-        iceCandidatesQueue.push(candidate);
-      }
-    });
-    
-    socket.on("call-ended", () => { endCallUI(); });
-
-    function endCall() { socket.emit("hang-up"); endCallUI(); }
-    
-    function endCallUI() {
-      if(peerConnection) peerConnection.close();
-      if(localStream) localStream.getTracks().forEach(track => track.stop());
-      document.getElementById("video-container").style.display = "none";
-      iceCandidatesQueue = []; // Clear queue
-      
-      // Reset buttons
-      document.getElementById("btn-mute").style.background = "#444";
-      document.getElementById("icon-mute").className = "fas fa-microphone";
-      
-      const btnCam = document.getElementById("btn-cam");
-      const iconCam = document.getElementById("icon-cam");
-      if(btnCam) {
-          btnCam.style.background = "#444";
-          iconCam.className = "fas fa-video";
-      }
-      location.reload(); 
-    }
-    
-    function toggleMute() {
-       if(!localStream) return;
-       const audioTrack = localStream.getAudioTracks()[0];
-       if(audioTrack) {
-         audioTrack.enabled = !audioTrack.enabled;
-         const btn = document.getElementById("btn-mute");
-         const icon = document.getElementById("icon-mute");
-         if(audioTrack.enabled) { btn.style.background = "#444"; icon.className = "fas fa-microphone"; } 
-         else { btn.style.background = "#ff4d4d"; icon.className = "fas fa-microphone-slash"; }
-       }
-    }
-
-    function toggleCam() {
-       if(!localStream) return;
-       const videoTrack = localStream.getVideoTracks()[0];
-       if(videoTrack) {
-         videoTrack.enabled = !videoTrack.enabled;
-         const btn = document.getElementById("btn-cam");
-         const icon = document.getElementById("icon-cam");
-         if(videoTrack.enabled) { btn.style.background = "#444"; icon.className = "fas fa-video"; } 
-         else { btn.style.background = "#ff4d4d"; icon.className = "fas fa-video-slash"; }
-       }
-    }
-    
-   
   </script>
 </body>
 </html>
-
-
-
-
-
-
