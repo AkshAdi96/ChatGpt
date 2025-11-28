@@ -19,7 +19,6 @@ const messageSchema = new mongoose.Schema({
   text: String,
   fileName: String, 
   type: { type: String, enum: ['text', 'image', 'document', 'audio'], default: 'text' },
-  expiresAt: { type: Date, index: { expires: '0s' } }, 
   timestamp: { type: Date, default: Date.now }
 });
 
@@ -35,66 +34,40 @@ io.on('connection', (socket) => {
       currentUser = username;
       socket.emit('auth-success');
       
-      // Default: Join Normal Room
-      socket.join('room-normal');
-      
-      // Load Normal History (Messages with NO expiry)
-      const history = await Message.find({ expiresAt: { $exists: false } })
-                                   .sort({ timestamp: 1 }).limit(50);
+      // Load last 50 messages
+      const history = await Message.find().sort({ timestamp: 1 }).limit(50);
       socket.emit('load-history', history);
     } else {
       socket.emit('auth-fail');
     }
   });
 
-  // --- THIS IS THE MISSING LINK FOR THE TOGGLE ---
-  socket.on('switch-mode', async (mode) => {
-    if (mode === 'temp') {
-        socket.leave('room-normal');
-        socket.join('room-temp');
-        // Load Temp History (Messages WITH expiry)
-        const history = await Message.find({ expiresAt: { $exists: true } })
-                                     .sort({ timestamp: 1 }).limit(50);
-        socket.emit('load-history', history);
-    } else {
-        socket.leave('room-temp');
-        socket.join('room-normal');
-        // Load Normal History
-        const history = await Message.find({ expiresAt: { $exists: false } })
-                                     .sort({ timestamp: 1 }).limit(50);
-        socket.emit('load-history', history);
-    }
-  });
-
   socket.on('chat message', async (data) => {
     if (!currentUser) return;
     
-    const msgData = {
+    const newMsg = new Message({
       username: currentUser,
       text: data.text,
       fileName: data.fileName || "",
       type: data.type || 'text'
-    };
+    });
 
-    let room = 'room-normal';
-    
-    // If Temp Mode is active, add expiry and change room
-    if (data.isTemp) {
-      msgData.expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); 
-      room = 'room-temp';
-    }
-
-    const newMsg = new Message(msgData);
     await newMsg.save();
-    
-    // Broadcast ONLY to the specific room
-    io.to(room).emit('chat message', newMsg);
+    io.emit('chat message', newMsg);
   });
 
   socket.on('typing', () => { if (currentUser) socket.broadcast.emit('display-typing', currentUser); });
   socket.on('stop-typing', () => { socket.broadcast.emit('hide-typing'); });
-  socket.on('unsend-message', async (id) => { await Message.findByIdAndDelete(id); io.emit('message-unsent', id); });
-  socket.on('edit-message', async ({ messageId, newText }) => { await Message.findByIdAndUpdate(messageId, { text: newText }); io.emit('message-edited', { messageId, newText }); });
+  
+  socket.on('unsend-message', async (id) => { 
+    await Message.findByIdAndDelete(id); 
+    io.emit('message-unsent', id); 
+  });
+  
+  socket.on('edit-message', async ({ messageId, newText }) => { 
+    await Message.findByIdAndUpdate(messageId, { text: newText }); 
+    io.emit('message-edited', { messageId, newText }); 
+  });
 });
 
 server.listen(3000, () => { console.log('Server running on 3000'); });
