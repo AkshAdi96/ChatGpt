@@ -1,22 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>New chat</title> <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ChatGPT</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
     /* --- CHATGPT THEME --- */
     :root { 
       --bg-body: #343541; 
-      --bg-sidebar: #202123; 
       --bg-user: #343541;
       --bg-ai: #444654;
       --text-primary: #ececf1;
-      --text-secondary: #8e8ea0;
+      --text-secondary: #c5c5d2;
       --input-bg: #40414f;
       --border: #565869;
+      --accent: #10a37f;
     }
     
+    * { box-sizing: border-box; }
+
     body { 
       font-family: 'Segoe UI', Helvetica, Arial, sans-serif; 
       margin: 0; background: var(--bg-body); color: var(--text-primary); height: 100dvh; 
@@ -27,24 +30,33 @@
     .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; background: var(--bg-body); z-index: 100; }
     .hidden { display: none !important; }
 
-    /* 1. AUTH SCREEN (Looks like OpenAI Login) */
-    #auth-screen { justify-content: center; align-items: center; text-align: center; }
-    .gpt-logo-big { font-size: 40px; margin-bottom: 20px; color: var(--text-primary); }
-    h2 { font-weight: 600; margin-bottom: 20px; color: var(--text-primary); }
+    /* --- 1. LOGIN SCREEN (Directly Visible) --- */
+    #auth-screen { 
+      justify-content: center; align-items: center; text-align: center; 
+      background: #000000; /* Darker background for login page look */
+    }
+    
+    .login-container { width: 320px; padding: 40px 0; }
+    .gpt-logo-big { font-size: 45px; margin-bottom: 25px; color: var(--text-primary); }
+    h2 { font-weight: 600; margin-bottom: 25px; color: var(--text-primary); font-size: 32px; }
+    
+    .input-group { margin-bottom: 15px; text-align: left; }
+    .input-label { display: block; font-size: 14px; color: var(--text-secondary); margin-bottom: 5px; }
     
     input.auth { 
-      padding: 12px 15px; background: #fff; border: 1px solid #ccc; 
-      border-radius: 4px; width: 280px; font-size: 16px; outline: none; color: #000;
-      margin-bottom: 15px; display: block;
+      width: 100%; padding: 15px; background: #fff; border: 1px solid #ccc; 
+      border-radius: 4px; font-size: 16px; outline: none; color: #000;
     }
     
     button.auth { 
-      padding: 12px; width: 310px; background: #10a37f; color: white; 
+      width: 100%; padding: 15px; background: var(--accent); color: white; 
       border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 16px; 
+      margin-top: 10px;
     }
     button.auth:hover { background: #0e8e6d; }
 
-    /* 2. CHAT HEADER (Mobile Header) */
+    /* --- 2. CHAT SCREEN --- */
+    /* Header */
     #header { 
       padding: 10px 15px; border-bottom: 1px solid rgba(255,255,255,0.1); 
       background: var(--bg-body); display: flex; justify-content: space-between; 
@@ -52,50 +64,52 @@
     }
     .hamburger { color: var(--text-primary); font-size: 20px; cursor: pointer; }
     .model-name { font-size: 14px; font-weight: 600; opacity: 0.9; }
-    .plus-icon { color: var(--text-primary); font-size: 20px; cursor: pointer; }
+    /* Panic button looks like "New Chat" icon */
+    .new-chat-icon { color: var(--text-primary); font-size: 18px; cursor: pointer; }
 
-    /* 3. MESSAGES (The GPT Row Style) */
+    /* Messages List */
     #messages { 
       list-style: none; padding: 0; margin: 0; 
       flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; 
     }
     
     .msg-row { 
-      padding: 20px 15px; border-bottom: 1px solid rgba(0,0,0,0.1); 
-      display: flex; gap: 15px; font-size: 15px; line-height: 1.6;
+      padding: 25px 20px; border-bottom: 1px solid rgba(0,0,0,0.1); 
+      display: flex; gap: 20px; font-size: 16px; line-height: 1.6;
+      justify-content: center; /* Center content like GPT */
     }
     
-    /* USER STYLES */
+    .row-content { width: 100%; max-width: 800px; display: flex; gap: 20px; }
+
     .row-user { background: var(--bg-user); }
     .avatar-user { 
-      width: 30px; height: 30px; border-radius: 2px; background: #5436da; 
-      display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0;
+      width: 30px; height: 30px; border-radius: 2px; background: #7c7c7c; 
+      display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;
     }
     
-    /* AI (YOU) STYLES */
     .row-ai { background: var(--bg-ai); }
     .avatar-ai { 
-      width: 30px; height: 30px; border-radius: 2px; background: #10a37f; 
+      width: 30px; height: 30px; border-radius: 2px; background: var(--accent); 
       display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
     }
 
-    .msg-content { flex-grow: 1; word-wrap: break-word; white-space: pre-wrap; }
+    .msg-text { flex-grow: 1; word-wrap: break-word; white-space: pre-wrap; }
     
-    /* Images in chat */
     .msg-img { max-width: 100%; border-radius: 5px; margin-top: 10px; }
-    .doc-link { color: #10a37f; text-decoration: underline; cursor: pointer; display: block; margin-top: 5px;}
+    .doc-link { color: var(--accent); text-decoration: underline; cursor: pointer; display: block; margin-top: 5px;}
 
-    /* 4. INPUT AREA */
+    /* Input Area */
     #form-container { 
       padding: 20px; background: var(--bg-body); 
       background-image: linear-gradient(180deg,rgba(53,55,64,0),#353740 58.85%);
-      position: relative;
+      display: flex; justify-content: center;
     }
     
     .input-box {
-      background: var(--input-bg); border: 1px solid rgba(0,0,0,0.3);
-      border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      display: flex; align-items: center; padding: 10px; gap: 10px;
+      width: 100%; max-width: 800px;
+      background: var(--input-bg); border: 1px solid rgba(0,0,0,0.2);
+      border-radius: 15px; box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      display: flex; align-items: center; padding: 12px 15px; gap: 10px;
     }
     
     #input { 
@@ -107,17 +121,13 @@
       color: #8e8ea0; background: none; border: none; font-size: 16px; cursor: pointer; 
       transition: 0.2s; padding: 5px; border-radius: 4px;
     }
-    .send-btn:hover { background: rgba(0,0,0,0.5); color: #ececf1; }
-    .send-btn.active { background: #19c37d; color: white; }
+    .send-btn.active { background: var(--accent); color: white; }
 
-    .file-btn { color: #8e8ea0; cursor: pointer; font-size: 16px; }
-    .file-btn:hover { color: #ececf1; }
-
-    /* Typing Cursor */
+    /* Typing Cursor Animation */
     .typing-cursor::after { content: "▋"; animation: blink 1s infinite; margin-left: 2px; }
     @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
-    /* Disguised Context Menu */
+    /* Context Menu */
     #context-menu { position: fixed; background: #202123; border: 1px solid #444; border-radius: 5px; display: none; flex-direction: column; width: 120px; z-index: 2000; }
     .ctx-item { padding: 10px; cursor: pointer; color: #ececf1; font-size: 13px; border-bottom: 1px solid #333; }
     .ctx-item:hover { background: #40414f; }
@@ -128,22 +138,33 @@
 <body>
 
   <div id="auth-screen" class="screen">
-    <div style="margin-bottom: 30px;">
-      <i class="fas fa-robot gpt-logo-big"></i>
+    <div class="login-container">
+      <div class="gpt-logo-big"><i class="fas fa-robot"></i></div>
       <h2>Welcome back</h2>
+      
+      <div class="input-group">
+        <label class="input-label">Email address</label>
+        <input id="username" class="auth" type="text" />
+      </div>
+      
+      <div class="input-group">
+        <label class="input-label">Password</label>
+        <input id="secret-code" type="password" class="auth" />
+      </div>
+      
+      <button class="auth" onclick="login()">Continue</button>
+      
+      <div style="margin-top: 20px; font-size: 14px;">
+        Don't have an account? <span style="color:var(--accent)">Sign up</span>
+      </div>
     </div>
-    
-    <input id="username" class="auth" placeholder="Email address" /> 
-    <input id="secret-code" type="password" class="auth" placeholder="Password" />
-    <button class="auth" onclick="login()">Continue</button>
-    <p style="margin-top: 15px; font-size: 12px; color: var(--text-secondary);">Don't have an account? <span style="color:#10a37f">Sign up</span></p>
   </div>
 
   <div id="chat-screen" class="screen hidden">
     <div id="header">
       <i class="fas fa-bars hamburger"></i>
-      <span class="model-name">ChatGPT 4.0 <span id="online-indicator" style="color:#10a37f; font-size:10px; display:none;">●</span></span>
-      <i class="fas fa-plus plus-icon" onclick="panic()"></i>
+      <span class="model-name">ChatGPT 4.0</span>
+      <i class="fas fa-plus new-chat-icon" onclick="panic()" title="New Chat"></i>
     </div>
     
     <ul id="messages"></ul>
@@ -153,7 +174,7 @@
         <input type="file" id="img-upload" accept="image/*" style="display:none" onchange="sendImage()" />
         <input type="file" id="doc-upload" accept=".pdf,.doc,.docx,.txt" style="display:none" onchange="sendDoc()" />
         
-        <label class="file-btn" onclick="toggleTools()"><i class="fas fa-plus-circle"></i></label>
+        <label class="send-btn" onclick="toggleTools()"><i class="fas fa-plus-circle"></i></label>
         
         <input id="input" autocomplete="off" placeholder="Message ChatGPT..." />
         
@@ -176,182 +197,3 @@
   <div id="context-menu">
     <div class="ctx-item" onclick="unsend()">Delete</div>
     <div class="ctx-item" onclick="startEdit()">Edit</div>
-  </div>
-
-  <script src="/socket.io/socket.io.js"></script>
-  <script>
-    const socket = io();
-    let myName = ""; 
-    let selectedMsgId = null; 
-    let selectedMsgIsMine = false;
-
-    // --- LOGIN LOGIC ---
-    function login() {
-      const code = document.getElementById('secret-code').value;
-      const nameInput = document.getElementById('username').value.trim();
-      
-      // LOGIC: If YOU login, type "admin" or your name -> You become ChatGPT
-      // If SHE logins (or types anything else) -> She becomes User
-      
-      // REPLACE 'admin' WITH THE NAME YOU WILL TYPE TO BE THE AI
-      if(nameInput.toLowerCase() === 'admin') {
-        myName = "ChatGPT";
-      } else {
-        myName = "User"; // She is always "User"
-      }
-
-      if(code) socket.emit('join', { code, username: myName });
-    }
-
-    socket.on('auth-success', () => {
-      document.getElementById('auth-screen').classList.add('hidden');
-      document.getElementById('chat-screen').classList.remove('hidden');
-      scrollToBottom();
-    });
-
-    socket.on('auth-fail', () => alert("Wrong email or password."));
-
-    // --- PANIC BUTTON ---
-    function panic() { window.location.href = "https://www.google.com"; }
-
-    // --- CHAT LOGIC ---
-    const messages = document.getElementById('messages');
-    const input = document.getElementById('input');
-    const sendBtn = document.getElementById('send-btn');
-
-    // Make send button green when typing
-    input.addEventListener('input', () => {
-      if(input.value.trim().length > 0) sendBtn.classList.add('active');
-      else sendBtn.classList.remove('active');
-      
-      socket.emit('typing');
-      clearTimeout(typingTimer);
-      typingTimer = setTimeout(() => socket.emit('stop-typing'), 1000);
-    });
-
-    input.addEventListener("keypress", function(event) {
-      if (event.key === "Enter") { event.preventDefault(); sendBtn.click(); }
-    });
-
-    sendBtn.onclick = () => {
-      if (input.value.trim()) {
-        socket.emit('chat message', { text: input.value, type: 'text' });
-        input.value = '';
-        sendBtn.classList.remove('active');
-      }
-    };
-
-    socket.on('chat message', (msg) => { addMessageToUI(msg); scrollToBottom(); });
-    socket.on('load-history', (history) => { messages.innerHTML = ''; history.forEach(addMessageToUI); scrollToBottom(); });
-
-    function scrollToBottom() { setTimeout(() => { messages.scrollTop = messages.scrollHeight; }, 50); }
-
-    function addMessageToUI(msg) {
-      const div = document.createElement('div');
-      
-      // DETERMINE STYLE BASED ON SENDER NAME
-      // If the sender is "ChatGPT", use AI style. Otherwise, User style.
-      const isAI = (msg.username === "ChatGPT");
-      
-      div.className = `msg-row ${isAI ? 'row-ai' : 'row-user'}`;
-      div.id = msg._id;
-      
-      // Avatar
-      const avatarHTML = isAI 
-        ? `<div class="avatar-ai"><i class="fas fa-robot"></i></div>` // AI Icon
-        : `<div class="avatar-user">U</div>`; // User Icon
-
-      // Content
-      let content = "";
-      if (msg.type === 'text') content = msg.text;
-      else if (msg.type === 'image') content = `<img src="${msg.text}" class="msg-img" />`;
-      else if (msg.type === 'document') content = `<a class="doc-link" href="${msg.text}" download="${msg.fileName}"><i class="fas fa-file"></i> ${msg.fileName}</a>`;
-
-      div.innerHTML = `
-        ${avatarHTML}
-        <div class="msg-content">${content}</div>
-      `;
-
-      // Right click menu
-      div.oncontextmenu = (e) => showMenu(e, msg._id, msg.username === myName);
-      let pressTimer;
-      div.ontouchstart = (e) => { pressTimer = setTimeout(() => showMenu(e, msg._id, msg.username === myName), 500); };
-      div.ontouchend = () => clearTimeout(pressTimer);
-
-      messages.appendChild(div);
-    }
-
-    // --- TYPING INDICATOR (Fake Cursor) ---
-    let typingTimer;
-    socket.on('display-typing', (user) => {
-      // Only show typing if it's the OTHER person
-      if(user !== myName) {
-        // We create a temporary fake message bubble
-        const tempId = "temp-typing";
-        if(!document.getElementById(tempId)) {
-           const div = document.createElement('div');
-           div.id = tempId;
-           div.className = `msg-row ${user === "ChatGPT" ? 'row-ai' : 'row-user'}`;
-           div.innerHTML = `
-             <div class="${user === "ChatGPT" ? 'avatar-ai' : 'avatar-user'}">${user === "ChatGPT" ? '<i class="fas fa-robot"></i>' : 'U'}</div>
-             <div class="msg-content typing-cursor"></div>
-           `;
-           messages.appendChild(div);
-           scrollToBottom();
-        }
-      }
-    });
-    
-    socket.on('hide-typing', () => {
-      const el = document.getElementById("temp-typing");
-      if(el) el.remove();
-    });
-
-    // --- TOOLS & UPLOADS ---
-    function toggleTools() {
-      const menu = document.getElementById('tool-menu');
-      menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
-    }
-    
-    function sendImage() {
-      toggleTools();
-      const file = document.getElementById('img-upload').files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (e) => socket.emit('chat message', { text: e.target.result, type: 'image' });
-      reader.readAsDataURL(file);
-    }
-    
-    function sendDoc() {
-      toggleTools();
-      const file = document.getElementById('doc-upload').files[0];
-      if (!file) return;
-      if(file.size > 10 * 1024 * 1024) return alert("File too large");
-      const reader = new FileReader();
-      reader.onload = (e) => socket.emit('chat message', { text: e.target.result, type: 'document', fileName: file.name });
-      reader.readAsDataURL(file);
-    }
-
-    // --- MENU ---
-    const menu = document.getElementById('context-menu');
-    const overlay = document.getElementById('menu-overlay');
-    function showMenu(e, msgId, isMine) {
-      if(!isMine) return; // Can only edit your own
-      e.preventDefault(); selectedMsgId = msgId;
-      let x = e.clientX; let y = e.clientY;
-      menu.style.left = x + 'px'; menu.style.top = y + 'px'; menu.style.display = 'flex'; overlay.style.display = 'block';
-    }
-    function closeMenu() { menu.style.display = 'none'; overlay.style.display = 'none'; }
-    function unsend() { if(selectedMsgId) socket.emit('unsend-message', selectedMsgId); closeMenu(); }
-    function startEdit() { if(selectedMsgId) { const newText = prompt("Edit:"); if(newText) socket.emit('edit-message', { messageId: selectedMsgId, newText }); } closeMenu(); }
-    
-    // Listen for edits/deletes to update UI instantly
-    socket.on('message-unsent', (id) => { const el = document.getElementById(id); if(el) el.remove(); });
-    socket.on('message-edited', ({ messageId, newText }) => {
-      const el = document.getElementById(messageId);
-      if(el) el.querySelector('.msg-content').innerText = newText;
-    });
-
-  </script>
-</body>
-</html>
