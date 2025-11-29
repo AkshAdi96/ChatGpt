@@ -3,7 +3,7 @@
 <head>
   <title>ChatGPT</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <link rel="icon" href="/openai.png">
+  <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   
@@ -30,16 +30,15 @@
     .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; background: var(--bg-color); z-index: 100; }
     .hidden { display: none !important; }
 
-    /* --- 1. LOGIN --- */
+    /* --- LOGIN --- */
     #auth-screen { justify-content: center; align-items: center; text-align: center; background: #000; }
     .login-container { width: 320px; padding: 40px 0; }
     
-    /* Login Logo: Display exactly as the file is */
     .gpt-logo-big { 
       width: 60px; height: 60px; 
       margin-bottom: 25px; 
       display: block; margin-left: auto; margin-right: auto;
-      object-fit: contain; /* Ensures it doesn't stretch */
+      filter: invert(1);
     }
     
     h2 { font-weight: 600; margin-bottom: 25px; font-size: 32px; }
@@ -48,7 +47,7 @@
     input.auth { width: 100%; padding: 15px; background: #fff; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; outline: none; color: #000; }
     button.auth { width: 100%; padding: 15px; background: var(--accent); color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
 
-    /* --- 2. HEADER --- */
+    /* --- HEADER --- */
     #header { 
       padding: 10px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); 
       background: var(--bg-color); display: flex; justify-content: space-between; 
@@ -61,21 +60,24 @@
       flex: 2; display: flex; justify-content: center; align-items: center; 
       gap: 8px; cursor: default; padding: 8px 12px; border-radius: 8px; user-select: none;
     }
-    
-    /* Header Logo (Small) */
-    .header-logo-small { width: 24px; height: 24px; object-fit: contain; }
-    
+    .header-logo-small { width: 24px; height: 24px; filter: invert(1); }
     .model-name { font-size: 18px; font-weight: 700; color: #d1d5db; }
     .header-right { flex: 1; display: flex; justify-content: flex-end; }
     .new-chat-icon { color: var(--text-color); font-size: 18px; cursor: pointer; }
 
-    /* --- 3. MESSAGES --- */
+    /* --- MESSAGES --- */
     #messages { 
       list-style: none; padding: 20px; margin: 0; 
       flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 15px;
       align-items: center;
     }
     
+    /* DATE DIVIDER STYLE */
+    .date-divider {
+      font-size: 12px; color: #6e6e80; font-weight: 600;
+      margin: 10px 0; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+
     .msg-row { display: flex; width: 100%; max-width: 800px; }
     
     .row-user { justify-content: flex-start; }
@@ -85,19 +87,12 @@
     .row-ai { justify-content: flex-end; }
     .row-ai .msg-bubble { background: var(--bubble-ai); border-top-right-radius: 2px; }
     
-    /* AI Avatar Container (Green Circle) */
     .row-ai .avatar { 
-        margin-left: 10px; 
-        background: var(--accent); /* OpenAI Green Background */
-        order: 2; 
-        width: 30px; height: 30px; 
-        border-radius: 50%; 
-        display: flex; align-items: center; justify-content: center;
-        padding: 6px; /* Padding to make your logo smaller inside the circle */
+        margin-left: 10px; background: var(--accent); order: 2; 
+        width: 30px; height: 30px; border-radius: 50%; 
+        display: flex; align-items: center; justify-content: center; padding: 6px; 
     } 
-
-    /* The Logo inside the Avatar */
-    .avatar-logo { width: 100%; height: 100%; object-fit: contain; }
+    .avatar-logo { width: 100%; height: 100%; filter: invert(1); }
 
     .msg-bubble {
       max-width: 85%; padding: 12px 16px; border-radius: 18px;
@@ -113,7 +108,7 @@
     .doc-name { font-size: 14px; text-decoration: none; word-break: break-all; flex-grow: 1; }
     .dl-btn-doc { background: rgba(255,255,255,0.1); width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; margin-left: 5px; }
 
-    /* --- 4. INPUT BAR --- */
+    /* --- INPUT --- */
     #form-container { padding: 15px; background: var(--bg-color); display: flex; justify-content: center; width: 100%; }
     .input-wrapper { width: 100%; max-width: 800px; background: var(--input-bg); border-radius: 26px; padding: 5px 10px; display: flex; align-items: center; gap: 8px; border: 1px solid #424242; transition: 0.2s; flex-wrap: nowrap; }
     .icon-btn { background: transparent; color: var(--text-dim); border: none; padding: 10px; font-size: 18px; cursor: pointer; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -123,7 +118,7 @@
     .send-btn:hover { background: #424242; }
     .send-btn.active { background: var(--accent); color: white; }
 
-    /* --- MENU & OVERLAYS --- */
+    /* --- OVERLAYS --- */
     #context-menu { position: fixed; background: #2f2f2f; border: 1px solid #444; border-radius: 8px; display: none; flex-direction: column; width: 120px; z-index: 2000; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
     .ctx-item { padding: 12px 15px; cursor: pointer; color: #ececf1; font-size: 14px; border-bottom: 1px solid #3e3e3e; display: flex; align-items: center; gap: 10px; }
     .ctx-item:hover { background: #3e3e3e; }
@@ -138,8 +133,7 @@
 
   <div id="auth-screen" class="screen">
     <div class="login-container">
-      <img src="/openai.png" class="gpt-logo-big">
-      
+      <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg" class="gpt-logo-big">
       <h2>Welcome back</h2>
       <div class="input-group"><label class="input-label">Email address</label><input id="username" class="auth" type="text" /></div>
       <div class="input-group"><label class="input-label">Password</label><input id="secret-code" type="password" class="auth" /></div>
@@ -152,7 +146,7 @@
       <div class="header-left"><i class="fas fa-bars hamburger"></i></div>
       
       <div class="model-selector">
-        <img src="/openai.png" class="header-logo-small">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg" class="header-logo-small">
         <span class="model-name">ChatGPT 4.0</span>
       </div>
 
@@ -185,6 +179,9 @@
     let myName = ""; 
     let selectedMsgId = null;
     let selectedMsgText = "";
+    
+    // --- DATE TRACKING FOR DIVIDERS ---
+    let lastDateRendered = null;
 
     function login() {
       const btn = document.getElementById('login-btn');
@@ -225,6 +222,7 @@
     socket.on('chat message', (msg) => { addMessageToUI(msg); scrollToBottom(); });
     socket.on('load-history', (history) => { 
         messages.innerHTML = ''; 
+        lastDateRendered = null; // Reset date tracker on reload
         history.forEach(addMessageToUI); 
         scrollToBottom(); 
     });
@@ -243,16 +241,41 @@
     function openImgModal(src) { document.getElementById("img-modal").style.display = "flex"; document.getElementById("img-modal-content").src = src; }
     function closeImgModal() { document.getElementById("img-modal").style.display = "none"; }
 
+    // --- DATE FORMATTER ---
+    function formatDate(dateObj) {
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        if (dateObj.toDateString() === today.toDateString()) return "Today";
+        if (dateObj.toDateString() === yesterday.toDateString()) return "Yesterday";
+        return dateObj.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+    }
+
     function addMessageToUI(msg) {
+      const list = document.getElementById('messages');
+      
+      // 1. DATE DIVIDER LOGIC
+      if (msg.timestamp) {
+          const msgDate = new Date(msg.timestamp);
+          const dateStr = msgDate.toDateString();
+          if (lastDateRendered !== dateStr) {
+              const divider = document.createElement('li');
+              divider.className = 'date-divider';
+              divider.innerText = formatDate(msgDate);
+              list.appendChild(divider);
+              lastDateRendered = dateStr;
+          }
+      }
+
       const li = document.createElement('li');
       const isAI = (msg.username === "ChatGPT");
       li.className = `msg-row ${isAI ? 'row-ai' : 'row-user'}`;
       li.id = msg._id;
       
-      // AI AVATAR USES YOUR IMAGE
       const avatarHTML = isAI ? 
         `<div class="avatar">
-           <img src="/openai.png" class="avatar-logo">
+           <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg" class="avatar-logo">
          </div>` : ``;
       
       let contentHTML = "";
@@ -275,7 +298,7 @@
             if(msg.type === 'text') showMenu(e); else showMenuDeleteOnly(e);
         }
       };
-      messages.appendChild(li);
+      list.appendChild(li);
     }
 
     function sendImage() { const file = document.getElementById('img-upload').files[0]; if(!file) return; const reader = new FileReader(); reader.onload = (e) => socket.emit('chat message', { text: e.target.result, type: 'image' }); reader.readAsDataURL(file); }
