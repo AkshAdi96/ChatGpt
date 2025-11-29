@@ -120,9 +120,23 @@
     }
     .meta-row { display: flex; justify-content: space-between; margin-bottom: 2px; }
     .msg-bubble.show-info .msg-meta { display: block; } 
-    
-    /* Span for updating seen status */
     .status-text { color: #10a37f; }
+
+    /* THINKING INDICATOR (The Bouncing Dots) */
+    .typing-indicator {
+      display: flex; align-items: center; gap: 4px; padding: 5px 0;
+    }
+    .dot {
+      width: 8px; height: 8px; background: #b4b4b4; border-radius: 50%;
+      animation: bounce 1.4s infinite ease-in-out both;
+    }
+    .dot:nth-child(1) { animation-delay: -0.32s; }
+    .dot:nth-child(2) { animation-delay: -0.16s; }
+    
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1); }
+    }
 
     .msg-img { max-width: 100%; border-radius: 10px; margin-top: 5px; display: block; }
     .img-wrapper { position: relative; display: inline-block; cursor: zoom-in; }
@@ -231,20 +245,27 @@
     const input = document.getElementById('input');
     const sendBtn = document.getElementById('send-btn');
     
+    let typingTimer;
+
     input.addEventListener('input', () => {
       if (input.value.trim().length > 0) sendBtn.classList.add('active'); else sendBtn.classList.remove('active');
+      
+      // SEND TYPING SIGNAL
       socket.emit('typing');
+      clearTimeout(typingTimer);
+      typingTimer = setTimeout(() => socket.emit('stop-typing'), 1000);
     });
+
     input.addEventListener("keypress", function(event) { if (event.key === "Enter") { event.preventDefault(); sendBtn.click(); }});
     sendBtn.onclick = () => { 
       if (input.value.trim()) { 
         socket.emit('chat message', { text: input.value, type: 'text' }); 
         input.value = ''; sendBtn.classList.remove('active'); 
+        socket.emit('stop-typing');
       }
     };
 
     socket.on('chat message', (msg) => { 
-        // INSTANT READ MARKING
         if(document.visibilityState === 'visible' && msg.username !== myName) {
             socket.emit('mark-as-read', msg._id);
         }
@@ -259,20 +280,46 @@
         scrollToBottom(); 
     });
 
-    // --- SEEN STATUS UPDATES (NO RELOAD) ---
-    // Update all my unread messages to "Seen Now"
+    // --- TYPING INDICATOR (THINKING) ---
+    socket.on('display-typing', (user) => {
+        if (user !== myName) {
+            // Check if already showing
+            if (document.getElementById('temp-typing')) return;
+
+            const li = document.createElement('li');
+            li.id = 'temp-typing';
+            
+            // Logic: If AI is typing, show AI style. If User is typing, show User style (hidden/minimal)
+            const isAI = (user === "ChatGPT");
+            li.className = `msg-row ${isAI ? 'row-ai' : 'row-user'}`;
+            
+            const avatarHTML = isAI ? 
+                `<div class="avatar"><img src="/openai.png" class="avatar-logo"></div>` : ``;
+
+            // Bouncing Dots Bubble
+            const bubbleHTML = `
+                <div class="msg-bubble" style="padding: 15px 20px;">
+                    <div class="typing-indicator">
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                    </div>
+                </div>
+            `;
+
+            li.innerHTML = `${avatarHTML}${bubbleHTML}`;
+            messages.appendChild(li);
+            scrollToBottom();
+        }
+    });
+
+    socket.on('hide-typing', () => {
+        const el = document.getElementById('temp-typing');
+        if (el) el.remove();
+    });
+
     socket.on('messages-read', () => {
-        document.querySelectorAll('.status-text').forEach(el => {
-            if(el.innerText === "Sent") {
-                const now = new Date();
-                const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                // We use a simplified date for instant update
-                const day = String(now.getDate()).padStart(2, '0');
-                const month = String(now.getMonth() + 1).padStart(2, '0');
-                const year = String(now.getFullYear()).slice(-2);
-                el.innerText = `${time} ${day}/${month}/${year}`;
-            }
-        });
+        // Simple update: reload quietly or just let next refresh handle it
     });
 
     socket.on('single-msg-read', (msgId) => {
@@ -314,19 +361,22 @@
     }
 
     function addMessageToUI(msg) {
+      // Remove typing indicator if exists so new msg goes below it
+      const typingEl = document.getElementById('temp-typing');
+      if (typingEl) typingEl.remove();
+
       const list = document.getElementById('messages');
       
-      // Date Divider
-      if (msg.timestamp) {
-          const msgDate = new Date(msg.timestamp);
-          const dateStr = msgDate.toDateString();
-          if (lastDateRendered !== dateStr) {
-              const divider = document.createElement('li');
-              divider.className = 'date-divider';
-              divider.innerText = formatDate(msgDate);
-              list.appendChild(divider);
-              lastDateRendered = dateStr;
-          }
+      const rawDate = msg.timestamp ? new Date(msg.timestamp) : new Date();
+      const dateObj = isNaN(rawDate.getTime()) ? new Date() : rawDate;
+
+      const dateStr = dateObj.toDateString();
+      if (lastDateRendered !== dateStr) {
+          const divider = document.createElement('li');
+          divider.className = 'date-divider';
+          divider.innerText = formatDate(dateObj);
+          list.appendChild(divider);
+          lastDateRendered = dateStr;
       }
 
       const li = document.createElement('li');
@@ -358,9 +408,6 @@
           }, 0);
       }
 
-      // METADATA
-      const rawDate = msg.timestamp ? new Date(msg.timestamp) : new Date();
-      const dateObj = isNaN(rawDate.getTime()) ? new Date() : rawDate;
       const timeSent = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       
       let statusContent = "Sent";
