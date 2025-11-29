@@ -15,8 +15,8 @@
       --text-color: #ececec;
       --text-dim: #b4b4b4;
       --accent: #10a37f;
-      --bubble-ai: #3E3F4B;   /* Lighter Grey for AI */
-      --bubble-user: #2f2f2f; /* Dark Grey for User (Was Green) */
+      --bubble-ai: #3E3F4B; 
+      --bubble-user: #2f2f2f; 
     }
     
     * { box-sizing: border-box; }
@@ -83,11 +83,9 @@
     /* USER (Right) */
     .row-user { justify-content: flex-end; }
     .row-user .msg-bubble { 
-        background: var(--bubble-user); /* Dark Grey now */
-        border-top-right-radius: 2px;
-        border-top-left-radius: 18px; 
-        color: var(--text-color); 
-        cursor: pointer; 
+        background: var(--bubble-user); 
+        border-top-right-radius: 2px; border-top-left-radius: 18px; 
+        color: var(--text-color); cursor: pointer; 
     }
     .row-user .avatar { display: none; } 
 
@@ -95,11 +93,9 @@
     .row-ai { justify-content: flex-start; }
     .row-ai .msg-bubble { 
         background: var(--bubble-ai); 
-        border-top-left-radius: 2px; 
-        border-top-right-radius: 18px;
+        border-top-left-radius: 2px; border-top-right-radius: 18px;
     }
     
-    /* AI Avatar */
     .row-ai .avatar { 
         margin-right: 10px; background: var(--accent); order: -1; 
         width: 30px; height: 30px; border-radius: 50%; 
@@ -111,6 +107,19 @@
       max-width: 85%; padding: 12px 16px; border-radius: 18px;
       font-size: 16px; line-height: 1.5; position: relative; word-wrap: break-word; user-select: none;
     }
+
+    /* METADATA (Hidden Info) */
+    .msg-meta {
+      display: none; 
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: right;
+    }
+    .meta-row { display: flex; justify-content: space-between; margin-bottom: 2px; }
+    .msg-bubble.show-info .msg-meta { display: block; } 
 
     .msg-img { max-width: 100%; border-radius: 10px; margin-top: 5px; display: block; }
     .img-wrapper { position: relative; display: inline-block; cursor: zoom-in; }
@@ -299,10 +308,42 @@
           setTimeout(() => { document.getElementById(btnId).onclick = (e) => { e.stopPropagation(); downloadBase64File(msg.text, msg.fileName); }; }, 0);
       }
 
-      li.innerHTML = `${avatarHTML}<div class="msg-bubble">${contentHTML}</div>`;
+      // META DATA (TIME FIRST, THEN DATE)
+      const date = new Date(msg.timestamp);
+      const timeSent = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = String(date.getFullYear()).slice(-2);
+      const shortDate = `${day}/${month}/${year}`;
+      
+      const seenDate = new Date(date.getTime() + 30000); 
+      const timeSeen = seenDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      // UPDATED META HTML
+      const metaHTML = `
+        <div class="msg-meta">
+            <div class="meta-row"><span>Sent:</span> <span>${timeSent}</span></div>
+            <div class="meta-row" style="color:#10a37f;"><span>Seen:</span> <span>${timeSeen} ${shortDate}</span></div>
+        </div>
+      `;
+
+      li.innerHTML = `${avatarHTML}<div class="msg-bubble">${contentHTML}${metaHTML}</div>`;
+      
       li.onclick = (e) => {
+        if(e.target.closest('.dl-btn-img') || e.target.closest('.dl-btn-doc')) return;
+
+        const bubble = li.querySelector('.msg-bubble');
+        if (bubble.classList.contains('show-info')) {
+            bubble.classList.remove('show-info');
+        } else {
+            document.querySelectorAll('.msg-bubble.show-info').forEach(b => b.classList.remove('show-info'));
+            bubble.classList.add('show-info');
+        }
+
         if (msg.username === myName) {
-            e.stopPropagation(); selectedMsgId = msg._id; selectedMsgText = msg.text; 
+            e.stopPropagation(); 
+            selectedMsgId = msg._id; selectedMsgText = msg.text; 
             if(msg.type === 'text') showMenu(e); else showMenuDeleteOnly(e);
         }
       };
@@ -337,4 +378,3 @@
   </script>
 </body>
 </html>
-
